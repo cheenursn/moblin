@@ -222,6 +222,7 @@ extension Model {
         setCurrentStream(stream: stream)
         reloadStream()
         sceneUpdated(attachCamera: true, updateRemoteScene: false)
+        storeSettings()
         startStreamIfAutoGoLive()
     }
 

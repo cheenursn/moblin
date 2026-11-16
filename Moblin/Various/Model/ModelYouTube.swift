@@ -9,6 +9,8 @@ class YouTube {
 
 extension Model {
     func youTubeVideoIdUpdated() {
+        storeSettings()
+        updateYouTubeVideoTitle()
         reloadViewers()
         reloadYouTubeLiveChat()
         resetChat()
@@ -70,6 +72,8 @@ extension Model {
                 stream.youTubeWantsToBeLoggedIn = authState != nil
                 stream.youTubeNotLoggedInCount = 0
                 self.youTube.session = nil
+                self.storeSettings()
+                self.updateYouTubeVideoTitle()
             }
         }
     }
@@ -78,6 +82,8 @@ extension Model {
         stream.youTubeAuthState = nil
         stream.youTubeWantsToBeLoggedIn = false
         removeYouTubeAuthStateInKeychain(streamId: stream.id)
+        storeSettings()
+        updateYouTubeVideoTitle()
     }
 
     func makeNotLoggedInToYouTubeToastIfNeeded() {

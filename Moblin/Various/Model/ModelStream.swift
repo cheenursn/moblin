@@ -332,6 +332,7 @@ extension Model {
         updateOrientationLock()
         updateStatusStreamText()
         reloadCameraLevel()
+        updateYouTubeVideoTitle()
     }
 
     func setCurrentStream(streamId: UUID) -> Bool {

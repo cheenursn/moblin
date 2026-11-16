@@ -82,6 +82,7 @@ private struct StreamDescriptionView: View {
                         stream.url = ingestsUrl
                         stream.youTubeVideoIds = youTubeStream.id
                         model.reloadStreamIfEnabled(stream: stream)
+                        model.youTubeVideoIdUpdated()
                     }
                     Button("No") {
                         stream.youTubeVideoIds = youTubeStream.id

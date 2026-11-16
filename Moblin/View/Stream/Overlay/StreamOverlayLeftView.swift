@@ -117,15 +117,25 @@ private struct ChatStatusView: View {
 }
 
 private struct StreamStatusView: View {
+    let streamName: String
     let streamText: String
     let textPlacement: StreamOverlayIconAndTextPlacement
 
     var body: some View {
-        StreamOverlayIconAndTextView(
-            icon: "dot.radiowaves.left.and.right",
-            text: streamText,
-            textPlacement: textPlacement
-        )
+        VStack(alignment: textPlacement == .beforeIcon ? .trailing : .leading, spacing: 1) {
+            Text(streamName)
+                .font(.headline)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.black.opacity(0.6))
+                .cornerRadius(5)
+            StreamOverlayIconAndTextView(
+                icon: "dot.radiowaves.left.and.right",
+                text: streamText,
+                textPlacement: textPlacement
+            )
+        }
     }
 }
 
@@ -193,7 +203,9 @@ private struct StatusesView: View {
 
     var body: some View {
         if model.isShowingStatusStream() {
-            StreamStatusView(streamText: status.streamText, textPlacement: textPlacement)
+            StreamStatusView(streamName: status.youTubeVideoTitle ?? model.stream.name,
+                             streamText: status.streamText,
+                             textPlacement: textPlacement)
         }
         if model.isShowingStatusCamera() {
             StreamOverlayIconAndTextView(

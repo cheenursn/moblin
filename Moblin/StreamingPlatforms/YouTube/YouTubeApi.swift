@@ -93,6 +93,18 @@ struct YouTubeApiListVideosResponse: Codable {
     let items: [YouTubeApiListVideo]
 }
 
+struct YouTubeApiVideoTitleSnippet: Codable {
+    let title: String
+}
+
+struct YouTubeApiVideoTitle: Codable {
+    let snippet: YouTubeApiVideoTitleSnippet
+}
+
+struct YouTubeApiVideoTitlesResponse: Codable {
+    let items: [YouTubeApiVideoTitle]
+}
+
 struct YouTubeApiLiveBroadcastListResponse: Codable {
     let items: [YouTubeApiLiveBroadcast]
 }
@@ -130,6 +142,26 @@ class YouTubeApi {
             switch $0 {
             case let .success(data):
                 if let response = try? JSONDecoder().decode(YouTubeApiListVideosResponse.self, from: data) {
+                    onCompleted(.success(response))
+                } else {
+                    onCompleted(.error)
+                }
+            case .authError:
+                onCompleted(.authError)
+            case .error:
+                onCompleted(.error)
+            }
+        }
+    }
+
+    func listVideoTitles(
+        videoIds: String,
+        onCompleted: @escaping (NetworkResponse<YouTubeApiVideoTitlesResponse>) -> Void
+    ) {
+        doGet(subPath: makeUrl("videos", [("part", "snippet"), ("id", videoIds)])) {
+            switch $0 {
+            case let .success(data):
+                if let response = try? JSONDecoder().decode(YouTubeApiVideoTitlesResponse.self, from: data) {
                     onCompleted(.success(response))
                 } else {
                     onCompleted(.error)

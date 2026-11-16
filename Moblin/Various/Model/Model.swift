@@ -269,6 +269,7 @@ struct ChatPlatformStatus: Equatable {
 
 @MainActor
 class StatusTopLeft: ObservableObject {
+    @Published var youTubeVideoTitle: String?
     @Published var numberOfViewersIconColor: Color = .white
     @Published var numberOfViewersCompact = noValue
     @Published var streamingPlatformStatuses: [StreamingPlatformStatus] = []
@@ -1361,6 +1362,7 @@ final class Model: NSObject, ObservableObject {
         setSelectedStreamDeck()
         startStreamIfAutoGoLive()
         applyBhoomiDefaultsOnce()
+        updateYouTubeVideoTitle()
         foldableReady = true
         DispatchQueue.main.async {
             self.applyStreamShapeForPosture()
@@ -2003,6 +2005,8 @@ final class Model: NSObject, ObservableObject {
     }
 
     private func handle30sTimer() {
+        updateYouTubeVideoTitle()
+        storeSettings()
         updateDjiDevicesStatus()
         updateBatteryLevel()
         writeFileLogToFile()

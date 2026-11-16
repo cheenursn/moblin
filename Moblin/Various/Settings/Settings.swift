@@ -151,7 +151,7 @@ class SettingsShow: Codable, ObservableObject {
     @Published var chat: Bool = false
     @Published var viewers: Bool = true
     @Published var uptime: Bool = true
-    @Published var stream: Bool = false
+    @Published var stream: Bool = true
     @Published var speed: Bool = true
     @Published var audioLevel: Bool = true
     @Published var zoom: Bool = false
@@ -244,7 +244,7 @@ class SettingsShow: Codable, ObservableObject {
         chat = container.decode(.chat, Bool.self, false)
         viewers = container.decode(.viewers, Bool.self, true)
         uptime = container.decode(.uptime, Bool.self, true)
-        stream = container.decode(.stream, Bool.self, false)
+        stream = container.decode(.stream, Bool.self, true)
         speed = container.decode(.speed, Bool.self, true)
         audioLevel = container.decode(.audioLevel, Bool.self, true)
         zoom = container.decode(.zoom, Bool.self, false)
