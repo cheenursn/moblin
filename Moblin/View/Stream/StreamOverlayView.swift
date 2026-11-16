@@ -184,26 +184,28 @@ struct StreamOverlayView: View {
                     BannersView(model: model, banners: model.banners)
                         .frame(maxWidth: orientation.isPortrait ? .infinity : 400)
                 }
-                HStack {
-                    if orientation.unfoldedPosture?.fillsHeightAlignedLeft != true {
-                        Spacer()
-                    }
-                    VStack(alignment: .leading, spacing: 10) {
+                if orientation.unfoldedPosture != .tallCameraTop {
+                    HStack {
+                        if orientation.unfoldedPosture?.fillsHeightAlignedLeft != true {
+                            Spacer()
+                        }
+                        VStack(alignment: .leading, spacing: 10) {
+                            if orientation.unfoldedPosture?.fillsHeightAlignedLeft == true {
+                                Spacer()
+                                LeftCaptureButtonsView(model: model, quickButtons: model.quickButtons)
+                            }
+                            RightOverlayBottomView(database: model.database,
+                                                   show: model.database.show,
+                                                   streamOverlay: model.streamOverlay,
+                                                   zoom: model.zoom,
+                                                   width: width)
+                        }
+                            .fixedSize(horizontal: orientation.unfoldedPosture?.fillsHeightAlignedLeft == true,
+                                       vertical: false)
+                            .padding(orientation.unfoldedPosture?.fillsHeightAlignedLeft == true ? .leading : .trailing)
                         if orientation.unfoldedPosture?.fillsHeightAlignedLeft == true {
                             Spacer()
-                            LeftCaptureButtonsView(model: model, quickButtons: model.quickButtons)
                         }
-                        RightOverlayBottomView(database: model.database,
-                                               show: model.database.show,
-                                               streamOverlay: model.streamOverlay,
-                                               zoom: model.zoom,
-                                               width: width)
-                    }
-                        .fixedSize(horizontal: orientation.unfoldedPosture?.fillsHeightAlignedLeft == true,
-                                   vertical: false)
-                        .padding(orientation.unfoldedPosture?.fillsHeightAlignedLeft == true ? .leading : .trailing)
-                    if orientation.unfoldedPosture?.fillsHeightAlignedLeft == true {
-                        Spacer()
                     }
                 }
                 HStack {

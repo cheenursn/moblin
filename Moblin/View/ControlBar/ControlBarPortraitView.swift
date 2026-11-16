@@ -275,12 +275,17 @@ private struct TallGroupedView: View {
             .padding(.leading, 10)
             VStack(spacing: 0) {
                 IconAndSettingsView(model: model, store: model.store)
-                Spacer(minLength: 0)
+                RightOverlayBottomView(database: model.database,
+                                       show: model.database.show,
+                                       streamOverlay: model.streamOverlay,
+                                       zoom: model.zoom,
+                                       width: 160)
+                    .padding(.top, 8)
                 StreamButton(show: model.show)
                     .padding(.horizontal, 5)
-                    .padding(.bottom, 10)
+                    .padding(.vertical, 10)
             }
-            .frame(width: controlBarWidthDefault)
+            .frame(width: 160)
             .padding(.trailing, 18)
         }
     }
