@@ -190,6 +190,7 @@ private struct MainPageView: View {
             }
             .padding(.leading, 0)
             .frame(width: controlBarWidthDefault)
+            .padding(.trailing, isUnfoldedInnerDisplay() ? 18 : 0)
             .sheet(isPresented: $presentingThermalState) {
                 ThermalStateSheetView(presenting: $presentingThermalState)
             }
