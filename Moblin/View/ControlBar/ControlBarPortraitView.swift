@@ -252,11 +252,56 @@ private struct PagesView: View {
     }
 }
 
+private struct TallGroupedView: View {
+    let model: Model
+    @ObservedObject var status: StatusOther
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 0) {
+            GeometryReader { geometry in
+                ScrollView(.vertical) {
+                    RightGroupedQuickButtonsView(
+                        model: model,
+                        quickButtons: model.quickButtons,
+                        quickButtonsSettings: model.database.quickButtonsGeneral,
+                        columns: max(Int(geometry.size.width / (controlBarButtonSize + 12)), 1),
+                        groups: [.capture] + QuickButtonGroup.right
+                    )
+                    .padding(.top, 5)
+                    .controlBarDoubleTapArea(model: model)
+                }
+                .scrollIndicators(.hidden)
+            }
+            .padding(.leading, 10)
+            VStack(spacing: 0) {
+                IconAndSettingsView(model: model, store: model.store)
+                Spacer(minLength: 0)
+                StreamButton(show: model.show)
+                    .padding(.horizontal, 5)
+                    .padding(.bottom, 10)
+            }
+            .frame(width: controlBarWidthDefault)
+            .padding(.trailing, 18)
+        }
+    }
+}
+
 struct ControlBarPortraitView: View {
     let model: Model
     @ObservedObject var quickButtons: SettingsQuickButtons
+    @ObservedObject var orientation: Orientation
 
     var body: some View {
+        if orientation.unfoldedPosture == .tallCameraTop {
+            TallGroupedView(model: model, status: model.statusOther)
+                .frame(height: 380)
+                .controlBarFilter(model: model)
+        } else {
+            pages
+        }
+    }
+
+    private var pages: some View {
         PagesView(model: model,
                   quickButtons: model.quickButtons,
                   pages: model.quickButtonsPages,

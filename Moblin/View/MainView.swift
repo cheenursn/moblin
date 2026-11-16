@@ -627,7 +627,7 @@ struct MainView: View {
         return layout {
             streamAndPanel()
             if orientation.isPortrait {
-                ControlBarPortraitView(model: model, quickButtons: quickButtons)
+                ControlBarPortraitView(model: model, quickButtons: quickButtons, orientation: orientation)
             } else {
                 ControlBarLandscapeView(model: model,
                                         quickButtons: quickButtons,

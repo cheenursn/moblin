@@ -152,6 +152,7 @@ struct RightGroupedQuickButtonsView: View {
     @ObservedObject var quickButtons: QuickButtons
     @ObservedObject var quickButtonsSettings: SettingsQuickButtons
     let columns: Int
+    var groups: [QuickButtonGroup] = QuickButtonGroup.right
     @State private var showingMore = false
 
     var body: some View {
@@ -159,7 +160,7 @@ struct RightGroupedQuickButtonsView: View {
             QuickButtonGroupsView(model: model,
                                   quickButtons: quickButtons,
                                   quickButtonsSettings: quickButtonsSettings,
-                                  groups: QuickButtonGroup.right,
+                                  groups: groups,
                                   columns: columns)
             GroupSeparatorView()
             MoreButtonView(showingMore: $showingMore)
