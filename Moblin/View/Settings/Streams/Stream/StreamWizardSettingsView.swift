@@ -52,8 +52,30 @@ struct StreamWizardSettingsView: View {
             } header: {
                 Text("Bhoomi Creatives")
             } footer: {
-                Text("Log in with Google and your stream key is filled in automatically.")
+                Text("Paste your YouTube stream key once, then go live with one tap.")
             }
+            Section {
+                NavigationLink {
+                    StreamWizardOthersSettingsView(model: model, createStreamWizard: createStreamWizard)
+                } label: {
+                    Text("Others")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .navigationTitle("Create stream wizard")
+        .toolbar {
+            CreateStreamWizardToolbar(createStreamWizard: createStreamWizard)
+        }
+    }
+}
+
+private struct StreamWizardOthersSettingsView: View {
+    let model: Model
+    let createStreamWizard: CreateStreamWizard
+
+    var body: some View {
+        Form {
             Section {
                 NavigationLink {
                     StreamWizardTwitchSettingsView(model: model, createStreamWizard: createStreamWizard)
@@ -76,7 +98,7 @@ struct StreamWizardSettingsView: View {
                     ObsLogoAndNameView()
                 }
             } header: {
-                Text("Other platforms")
+                Text("Platforms")
             }
             if !isMac() {
                 Section {
@@ -97,7 +119,7 @@ struct StreamWizardSettingsView: View {
                 Text("For advanced users or if your platform is not in the list above.")
             }
         }
-        .navigationTitle("Create stream wizard")
+        .navigationTitle("Others")
         .toolbar {
             CreateStreamWizardToolbar(createStreamWizard: createStreamWizard)
         }

@@ -98,7 +98,9 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
 }
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-    static var orientationLock: UIInterfaceOrientationMask = .landscape {
+    static var orientationLock: UIInterfaceOrientationMask = MainActor.assumeIsolated {
+        isUnfoldedInnerDisplay() ? .portrait : .landscape
+    } {
         didSet {
             for scene in UIApplication.shared.connectedScenes {
                 if let windowScene = scene as? UIWindowScene {

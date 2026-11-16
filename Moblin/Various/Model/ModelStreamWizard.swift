@@ -215,6 +215,9 @@ extension Model {
                 stream.audioCodec = createStreamWizard.customProtocol.toDefaultAudioCodec()
             }
         }
+        if createStreamWizard.platform == .youTube {
+            applyYouTubeDefaults(stream: stream, quality: createStreamWizard.youTubeQuality)
+        }
         database.streams.append(stream)
         setCurrentStream(stream: stream)
         reloadStream()
@@ -240,6 +243,7 @@ extension Model {
         createStreamWizard.kickSlug = nil
         createStreamWizard.kickChatroomChannelId = nil
         createStreamWizard.youTubeHandle = ""
+        createStreamWizard.youTubeQuality = .p1080fps30
         createStreamWizard.youTubeStream.youTubeAuthState = nil
         createStreamWizard.soopChannelName = ""
         createStreamWizard.soopStreamId = ""

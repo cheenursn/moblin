@@ -237,7 +237,8 @@ extension Model {
     }
 
     func resetSelectedScene(changeScene: Bool = true, attachCamera: Bool = true) {
-        if !enabledScenes.isEmpty, changeScene {
+        let currentSceneHidden = !enabledScenes.contains { $0.id == sceneSelector.selectedSceneId }
+        if !enabledScenes.isEmpty, changeScene || currentSceneHidden {
             setSceneId(id: enabledScenes[0].id)
             sceneSelector.sceneIndex = 0
         }

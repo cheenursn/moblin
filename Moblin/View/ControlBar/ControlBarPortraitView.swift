@@ -255,6 +255,7 @@ private struct PagesView: View {
 private struct TallGroupedView: View {
     let model: Model
     @ObservedObject var status: StatusOther
+    @ObservedObject var streamOverlay: StreamOverlay
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
@@ -275,12 +276,16 @@ private struct TallGroupedView: View {
             .padding(.leading, 10)
             VStack(spacing: 0) {
                 IconAndSettingsView(model: model, store: model.store)
-                RightOverlayBottomView(database: model.database,
-                                       show: model.database.show,
-                                       streamOverlay: model.streamOverlay,
-                                       zoom: model.zoom,
-                                       width: 160)
-                    .padding(.top, 8)
+                if !streamOverlay.showingWidePane {
+                    RightOverlayBottomView(database: model.database,
+                                           show: model.database.show,
+                                           streamOverlay: model.streamOverlay,
+                                           zoom: model.zoom,
+                                           width: 160)
+                        .padding(.top, 8)
+                } else {
+                    Spacer(minLength: 0)
+                }
                 StreamButton(show: model.show)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 10)
@@ -298,8 +303,8 @@ struct ControlBarPortraitView: View {
 
     var body: some View {
         if orientation.unfoldedPosture == .tallCameraTop {
-            TallGroupedView(model: model, status: model.statusOther)
-                .frame(height: 380)
+            TallGroupedView(model: model, status: model.statusOther, streamOverlay: model.streamOverlay)
+                .frame(height: model.tallControlBarHeight())
                 .controlBarFilter(model: model)
         } else {
             pages

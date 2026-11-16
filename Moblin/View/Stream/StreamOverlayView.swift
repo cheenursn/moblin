@@ -184,7 +184,7 @@ struct StreamOverlayView: View {
                     BannersView(model: model, banners: model.banners)
                         .frame(maxWidth: orientation.isPortrait ? .infinity : 400)
                 }
-                if orientation.unfoldedPosture != .tallCameraTop {
+                if orientation.unfoldedPosture != .tallCameraTop || streamOverlay.showingWidePane {
                     HStack {
                         if orientation.unfoldedPosture?.fillsHeightAlignedLeft != true {
                             Spacer()
@@ -208,6 +208,12 @@ struct StreamOverlayView: View {
                         }
                     }
                 }
+                HStack {
+                    Spacer()
+                    VerticalZoomSliderView(model: model, zoom: model.zoom)
+                        .padding(.trailing, 12)
+                }
+                .frame(maxHeight: .infinity)
                 HStack {
                     LeftOverlayView(model: model, database: model.database)
                         .padding(.leading, leadingPadding())

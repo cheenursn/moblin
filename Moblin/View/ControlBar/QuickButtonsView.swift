@@ -420,6 +420,10 @@ struct QuickButtonsInnerView: View {
         model.togglePhotoShoot()
     }
 
+    private func overlaysAction() {
+        model.toggleShowingPanel(type: .overlays, panel: .overlays)
+    }
+
     private func sceneEditorAction() {
         model.presentingSceneEditor = true
     }
@@ -1096,6 +1100,15 @@ struct QuickButtonsInnerView: View {
                                          buttonSize: size)
                         {
                             sceneEditorAction()
+                            stopFilteringUnlessPresentingDialog()
+                        }
+                    case .overlays:
+                        QuickButtonImage(model: model,
+                                         quickButtonsSettings: quickButtonsSettings,
+                                         button: button,
+                                         buttonSize: size)
+                        {
+                            overlaysAction()
                             stopFilteringUnlessPresentingDialog()
                         }
                     }

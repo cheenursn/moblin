@@ -1326,6 +1326,9 @@ class Database: Codable, ObservableObject {
     @Published var externalDisplayContent: SettingsExternalDisplayContent = .stream
     var cyclingPowerDevices: SettingsCyclingPowerDevices = .init()
     var cyclingPowerDevicesMigrated: Bool = false
+    var bhoomiOverlaysAdded: Bool = false
+    var bhoomiFramesAdded: Bool = false
+    var bhoomiPortraitFramesAdded: Bool = false
     var workoutDevices: SettingsWorkoutDevices = .init()
     var blackSharkCoolerDevices: SettingsBlackSharkCoolerDevices = .init()
     var remoteSceneId: UUID?
@@ -1389,6 +1392,7 @@ class Database: Codable, ObservableObject {
         addMissingDeepLinkQuickButtons(database: database)
         addMissingBundledLuts(database: database)
         addMissingGoPro(database: database)
+        addBhoomiDefaultOverlaysOnce(database: database)
         return database
     }
 
@@ -1455,6 +1459,9 @@ class Database: Codable, ObservableObject {
         case externalDisplayContent
         case cyclingPowerDevices
         case cyclingPowerDevicesMigrated
+        case bhoomiOverlaysAdded
+        case bhoomiFramesAdded
+        case bhoomiPortraitFramesAdded
         case heartRateDevices
         case phoneCoolerDevices
         case remoteSceneId
@@ -1551,6 +1558,9 @@ class Database: Codable, ObservableObject {
         try container.encode(.externalDisplayContent, externalDisplayContent)
         try container.encode(.cyclingPowerDevices, cyclingPowerDevices)
         try container.encode(.cyclingPowerDevicesMigrated, cyclingPowerDevicesMigrated)
+        try container.encode(.bhoomiOverlaysAdded, bhoomiOverlaysAdded)
+        try container.encode(.bhoomiFramesAdded, bhoomiFramesAdded)
+        try container.encode(.bhoomiPortraitFramesAdded, bhoomiPortraitFramesAdded)
         try container.encode(.heartRateDevices, workoutDevices)
         try container.encode(.phoneCoolerDevices, blackSharkCoolerDevices)
         try container.encode(.remoteSceneId, remoteSceneId)
@@ -1738,6 +1748,9 @@ class Database: Codable, ObservableObject {
         let httpProxyDefault = SettingsHttpProxy()
         httpProxyDefault.enabled = debug.httpProxyToBeRemoved
         httpProxy = container.decode(.httpProxy, SettingsHttpProxy.self, httpProxyDefault)
+        bhoomiOverlaysAdded = container.decode(.bhoomiOverlaysAdded, Bool.self, false)
+        bhoomiFramesAdded = container.decode(.bhoomiFramesAdded, Bool.self, false)
+        bhoomiPortraitFramesAdded = container.decode(.bhoomiPortraitFramesAdded, Bool.self, false)
     }
 
     func findScene(id: UUID) -> SettingsScene? {
@@ -1919,6 +1932,11 @@ private func addMissingQuickButtonsPageOne(database: Database) {
     button = SettingsQuickButton(type: .sceneEditor,
                                  imageOn: "rectangle.3.group.fill",
                                  imageOff: "rectangle.3.group",
+                                 page: page)
+    updateQuickButton(database: database, button: button)
+    button = SettingsQuickButton(type: .overlays,
+                                 imageOn: "square.stack.3d.up.fill",
+                                 imageOff: "square.stack.3d.up",
                                  page: page)
     updateQuickButton(database: database, button: button)
     button = SettingsQuickButton(type: .localOverlays,
@@ -2308,6 +2326,7 @@ func getDefaultMic() -> SettingsMic {
 private func createDefault() -> Database {
     let database = Database()
     addDefaultScenes(database: database)
+    addBhoomiDefaultOverlaysOnce(database: database)
     addDefaultZoomPresets(database: database)
     addDefaultBitratePresets(database: database)
     addMissingQuickButtons(database: database)

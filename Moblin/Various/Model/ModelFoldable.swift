@@ -36,18 +36,27 @@ private func applicationWindowScene() -> UIWindowScene? {
 
 @MainActor
 func isUnfoldedInnerDisplay() -> Bool {
-    guard isPhone(), let screen = applicationWindowScene()?.screen else {
+    guard isPhone() else {
         return false
     }
-    return min(screen.bounds.width, screen.bounds.height) >= 600
+    let bounds = applicationWindowScene()?.screen.bounds ?? UIScreen.main.bounds
+    return min(bounds.width, bounds.height) >= 600
 }
 
 @MainActor
 func isWindowPortrait() -> Bool {
-    guard let size = applicationWindowScene()?.coordinateSpace.bounds.size else {
+    guard let scene = applicationWindowScene() else {
         return false
     }
-    return size.height > size.width
+    switch scene.effectiveGeometry.interfaceOrientation {
+    case .portrait, .portraitUpsideDown:
+        return true
+    case .landscapeLeft, .landscapeRight:
+        return false
+    default:
+        let size = scene.coordinateSpace.bounds.size
+        return size.height > size.width
+    }
 }
 
 extension Model {
@@ -80,5 +89,28 @@ extension Model {
         }
         updateOrientationLock()
         updateOrientation()
+    }
+}
+
+extension StreamOverlay {
+    var showingWidePane: Bool {
+        showingReplay || showingBeauty || showingVideoPreview
+    }
+}
+
+extension Model {
+    func tallControlBarHeight() -> CGFloat {
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.session.role == .windowApplication })?
+            .windows.first
+        else {
+            return 380
+        }
+        let insets = window.safeAreaInsets
+        let width = window.bounds.width
+        let videoHeight = width / stream.dimensions().aspectRatio()
+        let available = window.bounds.height - insets.top - insets.bottom - videoHeight
+        return min(max(available.rounded(.down) - 2, 200), 600)
     }
 }

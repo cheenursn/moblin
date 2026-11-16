@@ -5,6 +5,7 @@ private struct SceneItemView: View {
     @ObservedObject var database: Database
     @ObservedObject var scene: SettingsScene
     let width: CGFloat
+    var fixedWidth: CGFloat?
 
     private func height() -> Double {
         if database.bigButtons {
@@ -19,7 +20,7 @@ private struct SceneItemView: View {
             Text(scene.name)
                 .minimumScaleFactor(pickerLabelMinimumScaleFactor)
                 .frame(
-                    width: min(sceneSegmentWidth, max((width - 20) / CGFloat(model.enabledScenes.count), 1)),
+                    width: fixedWidth ?? min(sceneSegmentWidth, max((width - 20) / CGFloat(model.enabledScenes.count), 1)),
                     height: height()
                 )
             if let quickSwitchGroup = scene.quickSwitchGroup {
@@ -85,6 +86,7 @@ struct StreamOverlayRightSceneVSelectorView: View {
     @ObservedObject var database: Database
     @ObservedObject var sceneSelector: SceneSelector
     let width: CGFloat
+    var segmentWidth: CGFloat = sceneSegmentWidth
 
     private func selectedScene() -> SettingsScene? {
         if sceneSelector.sceneIndex < model.enabledScenes.count {
@@ -112,13 +114,16 @@ struct StreamOverlayRightSceneVSelectorView: View {
                 model.showSceneSettings(scene: model.enabledScenes[index])
             }
         }, content: {
-            SceneItemView(database: database, scene: $0, width: width)
+            SceneItemView(database: database,
+                          scene: $0,
+                          width: width,
+                          fixedWidth: segmentWidth == sceneSegmentWidth ? nil : segmentWidth - 8)
         })
         .onChange(of: sceneSelector.sceneIndex) { tag in
             model.selectScene(id: model.enabledScenes[tag].id)
         }
         .foregroundStyle(.white)
-        .frame(width: sceneSegmentWidth)
+        .frame(width: segmentWidth)
         .padding(.bottom, 5)
     }
 }

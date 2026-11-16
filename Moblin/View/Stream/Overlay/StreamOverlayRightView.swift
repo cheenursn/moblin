@@ -738,15 +738,27 @@ private struct RightOverlayBottomVerticalView: View {
                         StreamOverlayRightZoomSliderView(model: model)
                     }
                 }
-                if show.zoomPresets, zoom.hasZoom {
+                if show.zoomPresets, zoom.hasZoom, model.orientation.unfoldedPosture != .tallCameraTop {
                     StreamOverlayRightZoomPresetVSelctorView(model: model,
                                                              zoom: zoom,
                                                              width: width)
                 }
             }
-            StreamOverlayRightSceneVSelectorView(database: database,
-                                                 sceneSelector: model.sceneSelector,
-                                                 width: width)
+            if model.orientation.unfoldedPosture == .tallCameraTop {
+                VStack(spacing: 6) {
+                    if show.zoomPresets, zoom.hasZoom {
+                        StreamOverlayRightZoomPresetSelctorView(model: model, zoom: zoom, width: width)
+                    }
+                    StreamOverlayRightSceneVSelectorView(database: database,
+                                                         sceneSelector: model.sceneSelector,
+                                                         width: width,
+                                                         segmentWidth: width - 10)
+                }
+            } else {
+                StreamOverlayRightSceneVSelectorView(database: database,
+                                                     sceneSelector: model.sceneSelector,
+                                                     width: width)
+            }
         }
     }
 }

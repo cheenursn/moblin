@@ -36,6 +36,7 @@ class CreateStreamWizard: ObservableObject {
     var kickSlug: String?
     var kickChatroomChannelId: String?
     @Published var youTubeHandle = ""
+    @Published var youTubeQuality: YouTubeQualityPreset = .p1080fps30
     @Published var soopChannelName = ""
     @Published var soopStreamId = ""
     @Published var obsAddress = ""

@@ -59,10 +59,79 @@ final class BhoomiBrandingEffect: VideoEffect, @unchecked Sendable {
         }
         sceneWidget = newSceneWidget
         self.size = size
-        guard let cgImage = renderCard().cgImage else {
+        let rendered = widget.style == .frame ? renderFrame(size: size) : renderCard()
+        guard let cgImage = rendered.cgImage else {
             return
         }
         cardImage = CIImage(cgImage: cgImage).toEffectImage(isOpaque: false)
+    }
+
+    private func renderFrame(size: CGSize) -> UIImage {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = false
+        return UIGraphicsImageRenderer(size: size, format: format).image { context in
+            let side = min(size.width, size.height)
+            let border = (side * 0.012).rounded()
+            let topBand = (size.height * 0.12).rounded()
+            let bottomBand = (size.height * 0.08).rounded()
+            widget.backgroundColor.uiColor().setFill()
+            UIBezierPath(rect: CGRect(x: 0, y: 0, width: size.width, height: topBand)).fill()
+            if !widget.footer.isEmpty {
+                UIBezierPath(rect: CGRect(x: 0,
+                                          y: size.height - bottomBand,
+                                          width: size.width,
+                                          height: bottomBand)).fill()
+            }
+            let frame = UIBezierPath(rect: CGRect(origin: .zero, size: size).insetBy(dx: border / 2, dy: border / 2))
+            frame.lineWidth = border
+            widget.accentColor.uiColor().setStroke()
+            frame.stroke()
+            var titleX = border * 3
+            if widget.showLogo, let logo = UIImage(named: "BhoomiCreativesLogo") {
+                let logoSide = topBand - border * 2.5
+                let logoRect = CGRect(x: border * 2, y: (topBand - logoSide) / 2, width: logoSide, height: logoSide)
+                context.cgContext.saveGState()
+                UIBezierPath(ovalIn: logoRect).addClip()
+                logo.draw(in: logoRect)
+                context.cgContext.restoreGState()
+                titleX = logoRect.maxX + border * 2
+            }
+            drawLine(widget.header,
+                     in: CGRect(x: titleX, y: 0, width: size.width - titleX - border * 3, height: topBand),
+                     style: widget.titleStyle,
+                     baseSize: topBand * 0.42)
+            if !widget.footer.isEmpty {
+                drawLine(widget.footer,
+                         in: CGRect(x: border * 3,
+                                    y: size.height - bottomBand,
+                                    width: size.width - border * 6,
+                                    height: bottomBand),
+                         style: widget.footerStyle,
+                         baseSize: bottomBand * 0.45)
+            }
+        }
+    }
+
+    private func drawLine(_ text: String,
+                          in rect: CGRect,
+                          style: SettingsBhoomiTextStyle,
+                          baseSize: Double)
+    {
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = style.textAlignment()
+        paragraph.lineBreakMode = .byTruncatingTail
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: style.font(baseSize: baseSize),
+            .foregroundColor: widget.textColor.uiColor(),
+            .paragraphStyle: paragraph,
+        ]
+        let height = (text as NSString).size(withAttributes: attributes).height
+        (text as NSString).draw(in: CGRect(x: rect.minX,
+                                           y: rect.midY - height / 2,
+                                           width: rect.width,
+                                           height: height),
+                                withAttributes: attributes)
     }
 
     private func renderCard() -> UIImage {
@@ -80,7 +149,10 @@ final class BhoomiBrandingEffect: VideoEffect, @unchecked Sendable {
             background.stroke()
             var y = 20.0
             if !widget.header.isEmpty {
-                drawText(widget.header, y: y, height: 90, fontSize: 56, weight: .bold, width: cardSize.width)
+                drawLine(widget.header,
+                         in: CGRect(x: 30, y: y, width: cardSize.width - 60, height: 90),
+                         style: widget.titleStyle,
+                         baseSize: 56)
                 y += 90
             }
             if widget.showLogo, let logo = UIImage(named: "BhoomiCreativesLogo") {
@@ -93,33 +165,11 @@ final class BhoomiBrandingEffect: VideoEffect, @unchecked Sendable {
                 y += 400
             }
             if !widget.footer.isEmpty {
-                drawText(widget.footer,
-                         y: y,
-                         height: 70,
-                         fontSize: 40,
-                         weight: .semibold,
-                         width: cardSize.width)
+                drawLine(widget.footer,
+                         in: CGRect(x: 30, y: y, width: cardSize.width - 60, height: 70),
+                         style: widget.footerStyle,
+                         baseSize: 40)
             }
         }
-    }
-
-    private func drawText(_ text: String,
-                          y: Double,
-                          height: Double,
-                          fontSize: Double,
-                          weight: UIFont.Weight,
-                          width: Double)
-    {
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .center
-        paragraph.lineBreakMode = .byTruncatingTail
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: fontSize, weight: weight),
-            .foregroundColor: widget.textColor.uiColor(),
-            .paragraphStyle: paragraph,
-        ]
-        let textHeight = (text as NSString).size(withAttributes: attributes).height
-        let rect = CGRect(x: 30, y: y + (height - textHeight) / 2, width: width - 60, height: textHeight)
-        (text as NSString).draw(in: rect, withAttributes: attributes)
     }
 }

@@ -29,6 +29,7 @@ enum ShowingPanel {
     case bitrate
     case mic
     case streamSwitcher
+    case overlays
     case luts
     case obs
     case sceneWidgets
@@ -646,6 +647,7 @@ final class Model: NSObject, ObservableObject {
     var mapEffects: [UUID: MapEffect] = [:]
     var qrCodeEffects: [UUID: QrCodeEffect] = [:]
     var bhoomiBrandingEffects: [UUID: BhoomiBrandingEffect] = [:]
+    var unfoldedOrientationKnown = false
     var alertsEffects: [UUID: AlertsEffect] = [:]
     var videoSourceEffects: [UUID: VideoSourceEffect] = [:]
     var enabledAlertsEffects: [AlertsEffect] = []
@@ -887,7 +889,8 @@ final class Model: NSObject, ObservableObject {
 
     private func orientationLock() -> UIInterfaceOrientationMask {
         if isUnfoldedInnerDisplay() {
-            [.portrait, .landscapeLeft]
+            unfoldedOrientationKnown || UIDevice.current.orientation.isValidInterfaceOrientation
+                ? [.portrait, .landscapeLeft] : .portrait
         } else if isPortraitUi() {
             .portrait
         } else if database.autoRotateToPortrait {
@@ -902,7 +905,7 @@ final class Model: NSObject, ObservableObject {
     }
 
     var enabledScenes: [SettingsScene] {
-        database.scenes.filter(\.enabled)
+        database.scenes.filter { $0.enabled && $0.orientation.matches(portraitStream: stream.portrait) }
     }
 
     func setAdaptiveBitrateSrtAlgorithm(stream: SettingsStream) {
@@ -970,6 +973,7 @@ final class Model: NSObject, ObservableObject {
             .autoSceneSwitcher,
             .live,
             .macros,
+            .overlays,
         ].contains(type)
     }
 
@@ -1863,6 +1867,10 @@ final class Model: NSObject, ObservableObject {
     }
 
     @objc private func handleOrientationDidChange(animated _: Bool) {
+        if !unfoldedOrientationKnown, UIDevice.current.orientation.isValidInterfaceOrientation {
+            unfoldedOrientationKnown = true
+            updateOrientationLock()
+        }
         updateOrientation()
     }
 

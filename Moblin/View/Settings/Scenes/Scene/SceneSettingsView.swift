@@ -111,6 +111,18 @@ private struct VideoSourceView: View {
 
     var body: some View {
         Section {
+            Picker("Show in", selection: $scene.orientation) {
+                ForEach(SettingsSceneOrientation.allCases, id: \.self) {
+                    Text($0.toString())
+                }
+            }
+            .onChange(of: scene.orientation) { _ in
+                model.resetSelectedScene()
+            }
+        } footer: {
+            Text("Landscape scenes are only listed when the stream is landscape, portrait scenes only when it is portrait.")
+        }
+        Section {
             NavigationLink {
                 InlinePickerView(
                     title: "Name",

@@ -223,6 +223,14 @@ struct WidgetWizardSettingsView: View {
                                                            scoreboard: createWidgetWizard.widget.scoreboard,
                                                            createWidgetWizard: createWidgetWizard,
                                                            presentingCreateWizard: $presentingCreateWizard)
+                    case .bhoomiBranding:
+                        WidgetWizardBhoomiBrandingSettingsView(
+                            model: model,
+                            database: database,
+                            branding: createWidgetWizard.widget.bhoomiBranding,
+                            createWidgetWizard: createWidgetWizard,
+                            presentingCreateWizard: $presentingCreateWizard
+                        )
                     default:
                         SelectScenesView(model: model,
                                          database: database,

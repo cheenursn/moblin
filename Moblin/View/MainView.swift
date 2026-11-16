@@ -137,6 +137,11 @@ private struct MenuView: View {
                 QuickButtonStreamSwitcherView(database: model.database)
                     .navigationBarTitleDisplayMode(.inline)
             }
+        case .overlays:
+            NavigationStack {
+                QuickButtonOverlaysView(model: model, database: model.database)
+                    .navigationBarTitleDisplayMode(.inline)
+            }
         case .luts:
             NavigationStack {
                 QuickButtonLutsView(model: model, color: model.database.color)

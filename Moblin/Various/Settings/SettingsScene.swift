@@ -2597,6 +2597,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
     var pomodoroTimer: SettingsWidgetPomodoroTimer = .init()
     @Published var enabled: Bool = true
     @Published var effects: [SettingsVideoEffect] = []
+    var imageStep: Bool = false
 
     init(name: String) {
         self.name = name
@@ -2631,6 +2632,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
         case pomodoroTimer
         case enabled
         case effects
+        case imageStep
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -2682,6 +2684,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
         }
         try container.encode(.enabled, enabled)
         try container.encode(.effects, effects)
+        try container.encode(.imageStep, imageStep)
     }
 
     required init(from decoder: any Decoder) throws {
@@ -2710,6 +2713,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
         pomodoroTimer = container.decode(.pomodoroTimer, SettingsWidgetPomodoroTimer.self, .init())
         enabled = container.decode(.enabled, Bool.self, true)
         effects = container.decode(.effects, [SettingsVideoEffect].self, [])
+        imageStep = container.decode(.imageStep, Bool.self, false)
         migrateFromOlderVersions()
     }
 
@@ -4187,6 +4191,7 @@ class SettingsScene: Codable, Identifiable, Equatable, ObservableObject, Named {
     @Published var micId: String = ""
     @Published var quickSwitchGroup: Int?
     @Published var mirror: Bool = false
+    @Published var orientation: SettingsSceneOrientation = .any
     var backgroundColor: RgbColor = defaultSegmentedPickerSelectedColor
     @Published var backgroundColorColor: Color = defaultSegmentedPickerSelectedColor.color()
 
@@ -4225,6 +4230,7 @@ class SettingsScene: Codable, Identifiable, Equatable, ObservableObject, Named {
         case micId
         case quickSwitchGroup
         case mirror
+        case orientation
         case backgroundColor
     }
 
@@ -4243,6 +4249,7 @@ class SettingsScene: Codable, Identifiable, Equatable, ObservableObject, Named {
         try container.encode(.micId, micId)
         try container.encode(.quickSwitchGroup, quickSwitchGroup)
         try container.encode(.mirror, mirror)
+        try container.encode(.orientation, orientation)
         try container.encode(.backgroundColor, backgroundColor)
     }
 
@@ -4265,6 +4272,7 @@ class SettingsScene: Codable, Identifiable, Equatable, ObservableObject, Named {
         micId = container.decode(.micId, String.self, "")
         quickSwitchGroup = container.decode(.quickSwitchGroup, Int?.self, nil)
         mirror = container.decode(.mirror, Bool.self, false)
+        orientation = container.decode(.orientation, SettingsSceneOrientation.self, .any)
         backgroundColor = container.decode(
             .backgroundColor,
             RgbColor.self,
@@ -4288,6 +4296,7 @@ class SettingsScene: Codable, Identifiable, Equatable, ObservableObject, Named {
         new.micId = micId
         new.quickSwitchGroup = quickSwitchGroup
         new.mirror = mirror
+        new.orientation = orientation
         new.backgroundColor = backgroundColor
         new.backgroundColorColor = backgroundColorColor
         return new
@@ -4397,6 +4406,34 @@ enum SettingsGraphicsImplementation: String, Codable, CaseIterable {
             "Core Image"
         case .metalPetal:
             "MetalPetal"
+        }
+    }
+}
+
+enum SettingsSceneOrientation: String, Codable, CaseIterable {
+    case any = "Any"
+    case landscape = "Landscape"
+    case portrait = "Portrait"
+
+    func toString() -> String {
+        switch self {
+        case .any:
+            String(localized: "Both")
+        case .landscape:
+            String(localized: "Landscape")
+        case .portrait:
+            String(localized: "Portrait")
+        }
+    }
+
+    func matches(portraitStream: Bool) -> Bool {
+        switch self {
+        case .any:
+            true
+        case .landscape:
+            !portraitStream
+        case .portrait:
+            portraitStream
         }
     }
 }

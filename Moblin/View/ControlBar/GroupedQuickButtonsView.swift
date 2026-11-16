@@ -17,7 +17,7 @@ enum QuickButtonGroup: Int, CaseIterable {
         case .mic, .mute, .torch, .gimbalTracking, .cameraMan, .cameraLevel, .grid, .fourThree,
              .portrait, .image:
             self = .cameraAndSound
-        case .sceneEditor, .widgets, .localOverlays, .browser, .interactiveBrowserWidgets,
+        case .sceneEditor, .overlays, .widgets, .localOverlays, .browser, .interactiveBrowserWidgets,
              .reloadBrowserWidgets, .draw, .poll, .macros, .autoSceneSwitcher:
             self = .scenesAndOverlays
         case .luts, .beauty, .moblinInMouth, .twin, .triple, .sepia, .grayScale, .pixellate, .crt, .movie,

@@ -37,11 +37,45 @@ struct StreamWizardYouTubeSettingsView: View {
         }
     }
 
+    private func canCreate() -> Bool {
+        !createStreamWizard.name.trim().isEmpty && !createStreamWizard.directStreamKey.trim().isEmpty
+    }
+
     var body: some View {
         Form {
             Section {
+                TextField("Name", text: $createStreamWizard.name)
+                    .disableAutocorrection(true)
+            } header: {
+                Text("Stream name")
+            } footer: {
+                Text("For example the show or topic, so you can pick it quickly when going live.")
+            }
+            Section {
+                TextField(String("xxxx-xxxx-xxxx-xxxx-xxxx"), text: $createStreamWizard.directStreamKey)
+                    .textInputAutocapitalization(.never)
+                    .disableAutocorrection(true)
+            } header: {
+                Text("Stream key")
+            } footer: {
+                VStack(alignment: .leading) {
+                    Text("Copy it from YouTube Studio → Go live → Stream:")
+                    Link(youTubeStudioLiveUrl, destination: URL(string: youTubeStudioLiveUrl)!)
+                        .font(.footnote)
+                }
+            }
+            Section {
+                Picker("Quality", selection: $createStreamWizard.youTubeQuality) {
+                    ForEach(YouTubeQualityPreset.allCases, id: \.self) {
+                        Text($0.toString())
+                    }
+                }
+            } footer: {
+                Text("H.264 over encrypted RTMPS with a 2 second keyframe interval, as YouTube recommends.")
+            }
+            Section {
                 if !youTubeStream.isYouTubeAuthorized() {
-                    TextButtonView("Login") {
+                    TextButtonView("Fill in with Google login") {
                         model.youTubeSignIn(stream: youTubeStream)
                     }
                 } else {
@@ -50,34 +84,27 @@ struct StreamWizardYouTubeSettingsView: View {
                     }
                 }
             } footer: {
-                Text("Optional, but simplifies the setup.")
+                Text("Optional. Fills in the stream key and enables chat.")
             }
             Section {
-                TextField(String("@erimo144"), text: $createStreamWizard.youTubeHandle)
-                    .textInputAutocapitalization(.never)
-                    .disableAutocorrection(true)
-            } header: {
-                Text("Channel handle")
-            } footer: {
-                Text("Only needed for chat.")
-            }
-            Section {
-                NavigationLink {
-                    StreamWizardNetworkSetupSettingsView(
-                        model: model,
-                        createStreamWizard: createStreamWizard,
-                        platform: String(localized: "YouTube")
-                    )
-                } label: {
-                    WizardNextButtonView()
+                TextButtonView("Create") {
+                    model.createStreamFromWizard()
+                    createStreamWizard.presenting = false
+                    createStreamWizard.presentingSetup = false
                 }
+                .disabled(!canCreate())
             }
         }
         .onAppear {
             createStreamWizard.platform = .youTube
-            createStreamWizard.name = makeUniqueName(name: String(localized: "YouTube"),
-                                                     existingNames: model.database.streams)
-            createStreamWizard.directIngest = "rtmp://a.rtmp.youtube.com/live2"
+            createStreamWizard.networkSetup = .direct
+            if createStreamWizard.name.isEmpty {
+                createStreamWizard.name = makeUniqueName(name: String(localized: "YouTube"),
+                                                         existingNames: model.database.streams)
+            }
+            if createStreamWizard.directIngest.isEmpty {
+                createStreamWizard.directIngest = youTubeRtmpsIngest
+            }
             youTubeStream.youTubeAuthState = nil
         }
         .onChange(of: youTubeStream.youTubeAuthState) { authState in

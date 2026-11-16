@@ -1,7 +1,5 @@
 import SwiftUI
 
-private let youTubeStudioLiveUrl = "https://studio.youtube.com/channel/UC/livestreaming"
-
 struct StreamWizardNetworkSetupDirectSettingsView: View {
     let model: Model
     @ObservedObject var createStreamWizard: CreateStreamWizard
