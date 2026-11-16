@@ -72,7 +72,7 @@ func isValidRemoteControlWidgetUpdate(widget: SettingsWidget,
             && isValidEffectsUpdate(widget, new, database)
     case .scene:
         return isValidSceneWidgetUpdate(widget, new, creating, database)
-    case .qrCode, .image:
+    case .qrCode, .image, .bhoomiBranding:
         return isValidEffectsUpdate(widget, new, database)
     case .snapshot:
         return isValidChange(widget.snapshot.showtime, new.snapshot.showtime) {

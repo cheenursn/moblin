@@ -278,6 +278,8 @@ struct WidgetSettingsSectionsView: View {
             WidgetSlideshowSettingsView(widget: widget)
         case .qrCode:
             WidgetQrCodeSettingsView(model: model, widget: widget)
+        case .bhoomiBranding:
+            WidgetBhoomiBrandingSettingsView(model: model, widget: widget, branding: widget.bhoomiBranding)
         case .alerts:
             WidgetAlertsSettingsView(model: model, widget: widget)
         case .videoSource:

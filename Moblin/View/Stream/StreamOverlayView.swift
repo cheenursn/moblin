@@ -185,13 +185,26 @@ struct StreamOverlayView: View {
                         .frame(maxWidth: orientation.isPortrait ? .infinity : 400)
                 }
                 HStack {
-                    Spacer()
-                    RightOverlayBottomView(database: model.database,
-                                           show: model.database.show,
-                                           streamOverlay: model.streamOverlay,
-                                           zoom: model.zoom,
-                                           width: width)
-                        .padding(.trailing)
+                    if orientation.unfoldedPosture?.fillsHeightAlignedLeft != true {
+                        Spacer()
+                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        if orientation.unfoldedPosture?.fillsHeightAlignedLeft == true {
+                            Spacer()
+                            LeftCaptureButtonsView(model: model, quickButtons: model.quickButtons)
+                        }
+                        RightOverlayBottomView(database: model.database,
+                                               show: model.database.show,
+                                               streamOverlay: model.streamOverlay,
+                                               zoom: model.zoom,
+                                               width: width)
+                    }
+                        .fixedSize(horizontal: orientation.unfoldedPosture?.fillsHeightAlignedLeft == true,
+                                   vertical: false)
+                        .padding(orientation.unfoldedPosture?.fillsHeightAlignedLeft == true ? .leading : .trailing)
+                    if orientation.unfoldedPosture?.fillsHeightAlignedLeft == true {
+                        Spacer()
+                    }
                 }
                 HStack {
                     LeftOverlayView(model: model, database: model.database)

@@ -500,7 +500,7 @@ struct RemoteControlRemoteSceneSettingsWidget: Codable, Equatable {
             type = .scene(data: RemoteControlRemoteSceneSettingsWidgetTypeScene(scene: widget.scene))
         case .slideshow:
             return nil
-        case .qrCode:
+        case .qrCode, .bhoomiBranding:
             return nil
         case .alerts:
             return nil

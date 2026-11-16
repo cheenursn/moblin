@@ -436,6 +436,8 @@ class Snapshot: ObservableObject {
 @MainActor
 class Orientation: ObservableObject {
     @Published var isPortrait: Bool = false
+    @Published var unfoldedPosture: UnfoldedPosture?
+    @Published var unsupportedUnfoldedPosition = false
 }
 
 @MainActor
@@ -643,6 +645,7 @@ final class Model: NSObject, ObservableObject {
     var lutEffects: [UUID: LutEffect] = [:]
     var mapEffects: [UUID: MapEffect] = [:]
     var qrCodeEffects: [UUID: QrCodeEffect] = [:]
+    var bhoomiBrandingEffects: [UUID: BhoomiBrandingEffect] = [:]
     var alertsEffects: [UUID: AlertsEffect] = [:]
     var videoSourceEffects: [UUID: VideoSourceEffect] = [:]
     var enabledAlertsEffects: [AlertsEffect] = []
@@ -870,11 +873,22 @@ final class Model: NSObject, ObservableObject {
     }
 
     func updateIsPortrait() {
+        updateUnfoldedPosture()
+        if let posture = orientation.unfoldedPosture {
+            orientation.isPortrait = posture.isTall
+            return
+        }
+        if isUnfoldedInnerDisplay() {
+            orientation.isPortrait = isWindowPortrait()
+            return
+        }
         orientation.isPortrait = isPortraitUi() || (database.autoRotateToPortrait && isDevicePortrait)
     }
 
     private func orientationLock() -> UIInterfaceOrientationMask {
-        if isPortraitUi() {
+        if isUnfoldedInnerDisplay() {
+            [.portrait, .landscapeLeft]
+        } else if isPortraitUi() {
             .portrait
         } else if database.autoRotateToPortrait {
             .allButUpsideDown
@@ -1340,6 +1354,7 @@ final class Model: NSObject, ObservableObject {
         setupStreamDeck()
         setSelectedStreamDeck()
         startStreamIfAutoGoLive()
+        applyBhoomiDefaultsOnce()
     }
 
     func reloadIngests() {
@@ -1830,7 +1845,9 @@ final class Model: NSObject, ObservableObject {
             break
         }
         updateIsPortrait()
-        if stream.portrait {
+        if let innerOrientation = innerDisplayCameraOrientation() {
+            media.setVideoOrientation(value: innerOrientation)
+        } else if stream.portrait {
             media.setVideoOrientation(value: .portrait)
         } else {
             switch deviceOrientation {
@@ -2860,7 +2877,9 @@ final class Model: NSObject, ObservableObject {
     }
 
     private func updateCameraPreviewRotation() {
-        if useLandscapeStreamAndPortraitUi(cameraDevice, isLandscapeStreamAndPortraitUi()) {
+        if let innerOrientation = innerDisplayCameraOrientation() {
+            cameraPreviewView.setVideoOrientation(innerOrientation)
+        } else if useLandscapeStreamAndPortraitUi(cameraDevice, isLandscapeStreamAndPortraitUi()) {
             cameraPreviewView.setVideoOrientation(.portrait)
         } else if stream.portrait {
             cameraPreviewView.setVideoOrientation(.portrait)

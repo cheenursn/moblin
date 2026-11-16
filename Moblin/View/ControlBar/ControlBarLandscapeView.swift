@@ -142,7 +142,7 @@ private struct IconAndSettingsView: View {
             Button {
                 model.toggleShowingPanel(type: nil, panel: .store)
             } label: {
-                Image("\(store.iconImage)NoBackground")
+                Image("BhoomiCreativesLogo")
                     .interpolation(.high)
                     .resizable()
                     .scaledToFit()
@@ -348,11 +348,74 @@ private struct PagesView: View {
     }
 }
 
+let packedButtonsPerRow = 6
+
+func packedControlBarWidth() -> Double {
+    Double(packedButtonsPerRow) * (controlBarButtonSize + 12) + 15
+}
+
+private struct PackedPagesView: View {
+    let model: Model
+    @ObservedObject var quickButtons: QuickButtons
+    @ObservedObject var quickButtonsSettings: SettingsQuickButtons
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Spacer(minLength: 0)
+                IconAndSettingsView(model: model, store: model.store)
+                    .frame(width: controlBarWidthDefault - 10)
+            }
+            .padding(.vertical, 2)
+            ScrollView(.vertical) {
+                RightGroupedQuickButtonsView(model: model,
+                                             quickButtons: quickButtons,
+                                             quickButtonsSettings: quickButtonsSettings,
+                                             columns: packedButtonsPerRow)
+                    .controlBarDoubleTapArea(model: model)
+            }
+            .scrollIndicators(.hidden)
+            HStack {
+                Spacer(minLength: 0)
+                StreamButton(show: model.show)
+                    .padding(.top, 5)
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(.horizontal, 5)
+    }
+}
+
 struct ControlBarLandscapeView: View {
     let model: Model
     @ObservedObject var quickButtons: SettingsQuickButtons
+    @ObservedObject var orientation: Orientation
+    @ObservedObject var buttons: QuickButtons
+
+    private var packed: Bool {
+        orientation.unfoldedPosture?.packsQuickButtonPages == true
+    }
 
     var body: some View {
+        if packed {
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    StatusView(model: model, status: model.statusOther)
+                        .frame(width: controlBarWidthDefault)
+                }
+                PackedPagesView(model: model,
+                                quickButtons: buttons,
+                                quickButtonsSettings: quickButtons)
+            }
+            .frame(width: packedControlBarWidth())
+            .controlBarFilter(model: model)
+        } else {
+            unpacked
+        }
+    }
+
+    private var unpacked: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 if !isPhone() {

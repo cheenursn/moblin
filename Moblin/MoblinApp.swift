@@ -80,6 +80,18 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
         #endif
     }
 
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        didUpdate _: UICoordinateSpace,
+        interfaceOrientation _: UIInterfaceOrientation,
+        traitCollection _: UITraitCollection
+    ) {
+        guard windowScene.session.role == .windowApplication else {
+            return
+        }
+        MoblinApp.globalModel?.handleDisplayChanged()
+    }
+
     func scene(_: UIScene, openURLContexts urlContexts: Set<UIOpenURLContext>) {
         MoblinApp.globalModel?.handleSettingsUrls(urls: urlContexts)
     }

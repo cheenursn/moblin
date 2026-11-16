@@ -8,14 +8,23 @@ struct StreamViewLayout {
          aspectRatio: CGFloat,
          portraitOrientation: Bool,
          portraitStream: Bool,
-         portraitVideoOffset: Double)
+         portraitVideoOffset: Double,
+         belowTopBar: Bool = false,
+         fillHeightAlignLeft: Bool = false)
     {
         let insets = metrics.safeAreaInsets
         let fullSize = CGSize(width: metrics.size.width + insets.leading + insets.trailing,
                               height: metrics.size.height + insets.top + insets.bottom)
         var size = CGSize(width: fullSize.width, height: fullSize.width / aspectRatio)
-        if size.height > fullSize.height {
+        if size.height > fullSize.height || fillHeightAlignLeft {
             size = CGSize(width: fullSize.height * aspectRatio, height: fullSize.height)
+        }
+        if fillHeightAlignLeft {
+            let pictureWidth = size.height * min(aspectRatio, 1 / aspectRatio)
+            self.size = size
+            offset = CGSize(width: 165 - (size.width - pictureWidth) / 2 - insets.leading,
+                            height: (metrics.size.height - size.height) / 2)
+            return
         }
         let x: CGFloat = if size.width <= metrics.size.width {
             (metrics.size.width - size.width) / 2
@@ -25,7 +34,7 @@ struct StreamViewLayout {
             fullSize.width - size.width - insets.leading
         }
         let y: CGFloat = if portraitOrientation, !portraitStream {
-            portraitVideoOffset * size.height * 2 - insets.top
+            portraitVideoOffset * size.height * 2 - (belowTopBar ? 0 : insets.top)
         } else if size.height <= metrics.size.height {
             (metrics.size.height - size.height) / 2
         } else if portraitOrientation {
@@ -44,6 +53,8 @@ extension Model {
                          aspectRatio: stream.dimensions().aspectRatio(),
                          portraitOrientation: orientation.isPortrait,
                          portraitStream: stream.portrait,
-                         portraitVideoOffset: stream.portrait ? 0 : portraitVideoOffsetFromTop)
+                         portraitVideoOffset: stream.portrait ? 0 : portraitVideoOffsetFromTop,
+                         belowTopBar: isUnfoldedInnerDisplay(),
+                         fillHeightAlignLeft: orientation.unfoldedPosture?.fillsHeightAlignedLeft == true)
     }
 }

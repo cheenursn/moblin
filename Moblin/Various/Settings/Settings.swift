@@ -148,7 +148,7 @@ class SettingsColor: Codable, ObservableObject {
 }
 
 class SettingsShow: Codable, ObservableObject {
-    @Published var chat: Bool = true
+    @Published var chat: Bool = false
     @Published var viewers: Bool = true
     @Published var uptime: Bool = true
     @Published var stream: Bool = false
@@ -241,7 +241,7 @@ class SettingsShow: Codable, ObservableObject {
 
     required init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        chat = container.decode(.chat, Bool.self, true)
+        chat = container.decode(.chat, Bool.self, false)
         viewers = container.decode(.viewers, Bool.self, true)
         uptime = container.decode(.uptime, Bool.self, true)
         stream = container.decode(.stream, Bool.self, false)

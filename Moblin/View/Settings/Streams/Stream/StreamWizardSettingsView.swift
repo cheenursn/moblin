@@ -41,6 +41,21 @@ struct StreamWizardSettingsView: View {
         Form {
             Section {
                 NavigationLink {
+                    StreamWizardYouTubeSettingsView(
+                        model: model,
+                        createStreamWizard: createStreamWizard,
+                        youTubeStream: createStreamWizard.youTubeStream
+                    )
+                } label: {
+                    YouTubeLogoAndNameView()
+                }
+            } header: {
+                Text("Bhoomi Creatives")
+            } footer: {
+                Text("Log in with Google and your stream key is filled in automatically.")
+            }
+            Section {
+                NavigationLink {
                     StreamWizardTwitchSettingsView(model: model, createStreamWizard: createStreamWizard)
                 } label: {
                     TwitchLogoAndNameView()
@@ -49,15 +64,6 @@ struct StreamWizardSettingsView: View {
                     StreamWizardKickSettingsView(model: model, createStreamWizard: createStreamWizard)
                 } label: {
                     KickLogoAndNameView()
-                }
-                NavigationLink {
-                    StreamWizardYouTubeSettingsView(
-                        model: model,
-                        createStreamWizard: createStreamWizard,
-                        youTubeStream: createStreamWizard.youTubeStream
-                    )
-                } label: {
-                    YouTubeLogoAndNameView()
                 }
                 NavigationLink {
                     StreamWizardSoopSettingsView(model: model, createStreamWizard: createStreamWizard)
@@ -70,7 +76,7 @@ struct StreamWizardSettingsView: View {
                     ObsLogoAndNameView()
                 }
             } header: {
-                Text("Platform to stream to")
+                Text("Other platforms")
             }
             if !isMac() {
                 Section {

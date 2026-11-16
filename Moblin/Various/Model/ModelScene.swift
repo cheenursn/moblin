@@ -219,6 +219,7 @@ extension Model {
             ?? getMapEffect(id: id)
             ?? getSnapshotEffect(id: id)
             ?? getQrCodeEffect(id: id)
+            ?? bhoomiBrandingEffects[id]
     }
 
     private func getWidgetVideoEffect<T>(_ widget: SettingsWidget, _ effect: SettingsVideoEffect) -> T? {
@@ -1058,6 +1059,7 @@ extension Model {
         resetBrowserVideoEffects(widgets: widgets)
         resetMapVideoEffects(widgets: widgets)
         resetQrCodeVideoEffects(widgets: widgets)
+        resetBhoomiBrandingVideoEffects(widgets: widgets)
         resetVideoSourceVideoEffects(widgets: widgets)
         resetScoreboardVideoEffects(widgets: widgets)
         resetAlertsVideoEffects(widgets: widgets)
@@ -1447,6 +1449,8 @@ extension Model {
                 addSceneSlideshowEffects(sceneWidget, widget, &effects)
             case .qrCode:
                 addSceneQrCodeEffects(sceneWidget, widget, &effects)
+            case .bhoomiBranding:
+                addSceneBhoomiBrandingEffects(sceneWidget, widget, &effects)
             case .alerts:
                 addSceneAlertsEffects(sceneWidget, widget, &effects, &needsSpeechToText)
             case .videoSource:

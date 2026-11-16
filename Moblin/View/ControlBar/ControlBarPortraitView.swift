@@ -131,7 +131,7 @@ private struct IconAndSettingsView: View {
             Button {
                 model.toggleShowingPanel(type: nil, panel: .store)
             } label: {
-                Image("\(store.iconImage)NoBackground")
+                Image("BhoomiCreativesLogo")
                     .interpolation(.high)
                     .resizable()
                     .scaledToFit()

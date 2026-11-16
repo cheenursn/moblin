@@ -84,6 +84,8 @@ extension Model {
             updateSceneWidget(widget, new, creating)
         case .qrCode:
             updateQrCodeWidget(widget, new, creating)
+        case .bhoomiBranding:
+            updateBhoomiBrandingWidget(widget, new, creating)
         case .image:
             updateImageWidget(widget, new, creating)
         case .snapshot:
@@ -230,6 +232,27 @@ extension Model {
     private func updateSceneWidget(_ widget: SettingsWidget, _ new: SettingsWidget, _ creating: Bool) {
         var changes = ChangeTracker()
         changes.apply(&widget.scene.sceneId, new.scene.sceneId)
+        if changes.changed, !creating {
+            resetSelectedScene(changeScene: false)
+        }
+    }
+
+    private func updateBhoomiBrandingWidget(
+        _ widget: SettingsWidget,
+        _ new: SettingsWidget,
+        _ creating: Bool
+    ) {
+        var changes = ChangeTracker()
+        applyEffectsUpdate(widget: widget, new: new, changes: &changes)
+        let branding = widget.bhoomiBranding
+        let newBranding = new.bhoomiBranding
+        changes.apply(&branding.showLogo, newBranding.showLogo)
+        changes.apply(&branding.header, newBranding.header)
+        changes.apply(&branding.footer, newBranding.footer)
+        changes.apply(&branding.colorScheme, newBranding.colorScheme)
+        changes.apply(&branding.backgroundColor, newBranding.backgroundColor)
+        changes.apply(&branding.textColor, newBranding.textColor)
+        changes.apply(&branding.accentColor, newBranding.accentColor)
         if changes.changed, !creating {
             resetSelectedScene(changeScene: false)
         }

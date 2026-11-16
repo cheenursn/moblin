@@ -776,7 +776,7 @@ class SettingsChat: Codable, ObservableObject {
     @Published var maximumAge: Int = 30
     @Published var maximumAgeEnabled: Bool = false
     @Published var meInUsernameColor: Bool = true
-    @Published var enabled: Bool = true
+    @Published var enabled: Bool = false
     @Published var filters: [SettingsChatFilter] = []
     var textToSpeechEnabled: Bool = false
     @Published var textToSpeechDefaultLanguage: String?
@@ -985,7 +985,7 @@ class SettingsChat: Codable, ObservableObject {
         maximumAge = container.decode(.maximumAge, Int.self, 30)
         maximumAgeEnabled = container.decode(.maximumAgeEnabled, Bool.self, false)
         meInUsernameColor = container.decode(.meInUsernameColor, Bool.self, true)
-        enabled = container.decode(.enabled, Bool.self, true)
+        enabled = container.decode(.enabled, Bool.self, false)
         filters = container.decode(.usernamesToIgnore, [SettingsChatFilter].self, [])
         textToSpeechEnabled = container.decode(.textToSpeechEnabled, Bool.self, false)
         textToSpeechDefaultLanguage = container.decode(.textToSpeechDefaultLanguage, String?.self, nil)

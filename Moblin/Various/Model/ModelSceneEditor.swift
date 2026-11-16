@@ -204,6 +204,8 @@ extension Model {
             return CGSize(width: side, height: side)
         case .bingoCard:
             return CGSize(width: side + 10, height: side + 10)
+        case .bhoomiBranding:
+            return fitInLayout(widget.bhoomiBranding.cardSize(), layout, canvasSize) ?? box
         case .browser:
             return fitInLayout(
                 CGSize(width: Double(widget.browser.width), height: Double(widget.browser.height)),

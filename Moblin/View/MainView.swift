@@ -629,7 +629,10 @@ struct MainView: View {
             if orientation.isPortrait {
                 ControlBarPortraitView(model: model, quickButtons: quickButtons)
             } else {
-                ControlBarLandscapeView(model: model, quickButtons: quickButtons)
+                ControlBarLandscapeView(model: model,
+                                        quickButtons: quickButtons,
+                                        orientation: orientation,
+                                        buttons: model.quickButtons)
             }
         }
     }
@@ -682,6 +685,8 @@ struct MainView: View {
                 SnapshotCountdownView(snapshot: model.snapshot)
                 InstantReplayCountdownView(replay: model.replay)
             }
+            .blur(radius: orientation.unsupportedUnfoldedPosition ? 25 : 0)
+            .animation(.easeInOut(duration: 0.2), value: orientation.unsupportedUnfoldedPosition)
             .onAppear {
                 model.setup()
             }

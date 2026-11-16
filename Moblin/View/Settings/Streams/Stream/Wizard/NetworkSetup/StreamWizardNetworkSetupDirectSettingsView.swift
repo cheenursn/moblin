@@ -1,5 +1,7 @@
 import SwiftUI
 
+private let youTubeStudioLiveUrl = "https://studio.youtube.com/channel/UC/livestreaming"
+
 struct StreamWizardNetworkSetupDirectSettingsView: View {
     let model: Model
     @ObservedObject var createStreamWizard: CreateStreamWizard
@@ -126,7 +128,11 @@ struct StreamWizardNetworkSetupDirectSettingsView: View {
                 } header: {
                     Text("Stream key")
                 } footer: {
-                    Text("Copy from https://youtube.com (requires login).")
+                    VStack(alignment: .leading) {
+                        Text("Filled in automatically if you logged in with Google. Otherwise copy it from:")
+                        Link(youTubeStudioLiveUrl, destination: URL(string: youTubeStudioLiveUrl)!)
+                            .font(.footnote)
+                    }
                 }
             case .soop:
                 Section {

@@ -2582,6 +2582,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
     var map: SettingsWidgetMap = .init()
     var scene: SettingsWidgetScene = .init()
     var qrCode: SettingsWidgetQrCode = .init()
+    var bhoomiBranding: SettingsWidgetBhoomiBranding = .init()
     var alerts: SettingsWidgetAlerts = .init()
     var videoSource: SettingsWidgetVideoSource = .init()
     var scoreboard: SettingsWidgetScoreboard = .init()
@@ -2615,6 +2616,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
         case map
         case scene
         case qrCode
+        case bhoomiBranding
         case alerts
         case videoSource
         case scoreboard
@@ -2649,6 +2651,8 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
             try container.encode(.scene, scene)
         case .qrCode:
             try container.encode(.qrCode, qrCode)
+        case .bhoomiBranding:
+            try container.encode(.bhoomiBranding, bhoomiBranding)
         case .alerts:
             try container.encode(.alerts, alerts)
         case .videoSource:
@@ -2691,6 +2695,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
         map = container.decode(.map, SettingsWidgetMap.self, .init())
         scene = container.decode(.scene, SettingsWidgetScene.self, .init())
         qrCode = container.decode(.qrCode, SettingsWidgetQrCode.self, .init())
+        bhoomiBranding = container.decode(.bhoomiBranding, SettingsWidgetBhoomiBranding.self, .init())
         alerts = container.decode(.alerts, SettingsWidgetAlerts.self, .init())
         videoSource = container.decode(.videoSource, SettingsWidgetVideoSource.self, .init())
         scoreboard = container.decode(.scoreboard, SettingsWidgetScoreboard.self, .init())
@@ -2769,6 +2774,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
             .crop,
             .map,
             .qrCode,
+            .bhoomiBranding,
             .alerts,
             .videoSource,
             .vTuber,
@@ -2791,6 +2797,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
             .crop,
             .map,
             .qrCode,
+            .bhoomiBranding,
             .videoSource,
             .vTuber,
             .pngTuber,
@@ -2811,6 +2818,7 @@ class SettingsWidget: Codable, Identifiable, Equatable, ObservableObject, Named,
             .crop,
             .map,
             .qrCode,
+            .bhoomiBranding,
             .alerts,
             .videoSource,
             .vTuber,
@@ -2874,6 +2882,9 @@ class SettingsSceneWidget: Codable, Identifiable, Equatable, ObservableObject, @
             layout.size = 30
         case .map, .qrCode:
             layout.size = 23
+        case .bhoomiBranding:
+            layout.size = 20
+            layout.alignment = .topRight
         case .videoSource, .vTuber, .pngTuber:
             layout.size = 28
             layout.alignment = .bottomRight
@@ -4008,6 +4019,7 @@ enum SettingsWidgetType: String, Codable, CaseIterable {
     case vTuber = "VTuber"
     case pngTuber = "PNGTuber"
     case qrCode = "QR code"
+    case bhoomiBranding = "Bhoomi Creatives branding"
     case scoreboard = "Scoreboard"
     case wheelOfLuck = "Wheel of luck"
     case bingoCard = "Bingo card"
@@ -4044,6 +4056,8 @@ enum SettingsWidgetType: String, Codable, CaseIterable {
             String(localized: "PNGTuber")
         case .qrCode:
             String(localized: "QR code")
+        case .bhoomiBranding:
+            String(localized: "Bhoomi Creatives branding")
         case .scoreboard:
             String(localized: "Scoreboard")
         case .wheelOfLuck:
@@ -4081,6 +4095,8 @@ enum SettingsWidgetType: String, Codable, CaseIterable {
             "play.rectangle"
         case .qrCode:
             "qrcode"
+        case .bhoomiBranding:
+            "seal"
         case .alerts:
             "megaphone"
         case .videoSource:
@@ -4136,6 +4152,10 @@ enum SettingsWidgetType: String, Codable, CaseIterable {
             )
         case .qrCode:
             String(localized: "A QR code widget shows a QR code of any text.")
+        case .bhoomiBranding:
+            String(
+                localized: "Shows the Bhoomi Creatives logo with an optional header and footer."
+            )
         case .scoreboard:
             String(
                 localized: "A scoreboard widget shows a sports scoreboard, controlled with an Apple Watch."
