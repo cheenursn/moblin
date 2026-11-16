@@ -648,6 +648,8 @@ final class Model: NSObject, ObservableObject {
     var qrCodeEffects: [UUID: QrCodeEffect] = [:]
     var bhoomiBrandingEffects: [UUID: BhoomiBrandingEffect] = [:]
     var unfoldedOrientationKnown = false
+    var foldableReady = false
+    var foldedStreamPortrait: Bool?
     var alertsEffects: [UUID: AlertsEffect] = [:]
     var videoSourceEffects: [UUID: VideoSourceEffect] = [:]
     var enabledAlertsEffects: [AlertsEffect] = []
@@ -1359,6 +1361,10 @@ final class Model: NSObject, ObservableObject {
         setSelectedStreamDeck()
         startStreamIfAutoGoLive()
         applyBhoomiDefaultsOnce()
+        foldableReady = true
+        DispatchQueue.main.async {
+            self.applyStreamShapeForPosture()
+        }
     }
 
     func reloadIngests() {

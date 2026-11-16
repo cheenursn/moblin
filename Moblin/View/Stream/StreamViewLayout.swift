@@ -20,10 +20,11 @@ struct StreamViewLayout {
             size = CGSize(width: fullSize.height * aspectRatio, height: fullSize.height)
         }
         if fillHeightAlignLeft {
-            let pictureWidth = size.height * min(aspectRatio, 1 / aspectRatio)
-            self.size = size
-            offset = CGSize(width: 165 - (size.width - pictureWidth) / 2 - insets.leading,
-                            height: (metrics.size.height - size.height) / 2)
+            let height = metrics.size.height
+            let fitted = CGSize(width: height * aspectRatio, height: height)
+            let pictureWidth = height * min(aspectRatio, 1 / aspectRatio)
+            self.size = fitted
+            offset = CGSize(width: 165 - (fitted.width - pictureWidth) / 2 - insets.leading, height: 0)
             return
         }
         let x: CGFloat = if size.width <= metrics.size.width {

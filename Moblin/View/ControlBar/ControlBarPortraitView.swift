@@ -304,6 +304,7 @@ struct ControlBarPortraitView: View {
     var body: some View {
         if orientation.unfoldedPosture == .tallCameraTop {
             TallGroupedView(model: model, status: model.statusOther, streamOverlay: model.streamOverlay)
+                .padding(.top, 6)
                 .frame(height: model.tallControlBarHeight())
                 .controlBarFilter(model: model)
         } else {

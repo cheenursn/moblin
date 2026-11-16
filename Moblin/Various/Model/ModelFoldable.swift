@@ -68,6 +68,9 @@ extension Model {
         }
         if orientation.unfoldedPosture != posture {
             orientation.unfoldedPosture = posture
+            DispatchQueue.main.async {
+                self.applyStreamShapeForPosture()
+            }
         }
         let unsupported = posture != nil
             && [.portraitUpsideDown, .landscapeRight].contains(UIDevice.current.orientation)
@@ -111,6 +114,35 @@ extension Model {
         let width = window.bounds.width
         let videoHeight = width / stream.dimensions().aspectRatio()
         let available = window.bounds.height - insets.top - insets.bottom - videoHeight
-        return min(max(available.rounded(.down) - 2, 200), 600)
+        return min(max(available.rounded(.down) - 16, 200), 600)
     }
 }
+
+extension Model {
+    func applyStreamShapeForPosture() {
+        guard foldableReady, media != nil, !isLive, !isRecording else {
+            return
+        }
+        let portrait: Bool
+        if let posture = orientation.unfoldedPosture {
+            if foldedStreamPortrait == nil {
+                foldedStreamPortrait = stream.portrait
+            }
+            portrait = posture == .wideCameraTop
+        } else {
+            guard let saved = foldedStreamPortrait else {
+                return
+            }
+            portrait = saved
+            foldedStreamPortrait = nil
+        }
+        guard stream.portrait != portrait else {
+            return
+        }
+        stream.portrait = portrait
+        reloadStream()
+        resetSelectedScene(changeScene: false)
+        updateOrientation()
+    }
+}
+
