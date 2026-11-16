@@ -1111,7 +1111,7 @@ struct QuickButtonsInnerView: View {
                         .background(Circle().fill(button.backgroundColor.color()))
                 }
             }
-            if quickButtonsSettings.showName, !orientation.isPortrait {
+            if quickButtonsSettings.showName, !orientation.isPortrait || orientation.unfoldedPosture != nil {
                 Text(button.name)
                     .padding(0)
                     .multilineTextAlignment(.center)
