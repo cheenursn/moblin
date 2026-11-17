@@ -4,41 +4,66 @@ struct StreamWizardYouTubeSettingsView: View {
     let model: Model
     @ObservedObject var createStreamWizard: CreateStreamWizard
     @ObservedObject var youTubeStream: SettingsStream
+    @ObservedObject var database: Database
+    @State private var useOtherKey = false
+    @StateObject private var broadcast = YouTubeBroadcastDetails()
+    @State private var creating = false
+    @State private var broadcastError: String?
 
-    private func fetchLiveStreams() {
-        model.getYouTubeApi(stream: youTubeStream) { youTubeApi in
-            youTubeApi?.listLiveStreams {
-                switch $0 {
-                case let .success(response):
-                    if let liveStream = response.items.first {
-                        let ingestionInfo = liveStream.cdn.ingestionInfo
-                        createStreamWizard.directIngest = ingestionInfo.ingestionAddress
-                        createStreamWizard.directStreamKey = ingestionInfo.streamName
-                    }
-                case .authError, .error:
-                    break
-                }
-            }
-        }
+    init(model: Model, createStreamWizard: CreateStreamWizard, youTubeStream: SettingsStream) {
+        self.model = model
+        self.createStreamWizard = createStreamWizard
+        self.youTubeStream = youTubeStream
+        database = model.database
     }
 
-    private func fetchChannelHandle() {
-        model.getYouTubeApi(stream: youTubeStream) { youTubeApi in
-            youTubeApi?.listChannels {
-                switch $0 {
-                case let .success(response):
-                    if let handle = response.items.first?.snippet.customUrl {
-                        createStreamWizard.youTubeHandle = handle
-                    }
-                case .authError, .error:
-                    break
-                }
-            }
-        }
+    private func accountKey() -> String {
+        database.youTubeAccountStreamKey
     }
 
     private func canCreate() -> Bool {
         !createStreamWizard.name.trim().isEmpty && !createStreamWizard.directStreamKey.trim().isEmpty
+    }
+
+    private func create() {
+        createStreamWizard.directIngest = youTubeRtmpsIngest
+        if model.isYouTubeAccountSignedIn() {
+            youTubeStream.youTubeAuthState = model.youTubeAccount.youTubeAuthState
+            youTubeStream.youTubeWantsToBeLoggedIn = true
+            createStreamWizard.youTubeHandle = database.youTubeAccountHandle
+        } else {
+            youTubeStream.youTubeAuthState = nil
+        }
+        model.createStreamFromWizard()
+        guard let stream = model.database.streams.last else {
+            close()
+            return
+        }
+        if broadcast.title.trim().isEmpty {
+            broadcast.title = stream.name
+        }
+        stream.youTubeBroadcast = broadcast
+        model.storeSettings()
+        guard broadcast.enabled, !broadcast.startNow else {
+            close()
+            return
+        }
+        creating = true
+        model.createYouTubeBroadcast(stream: stream, details: broadcast) { error in
+            creating = false
+            model.storeSettings()
+            if let error {
+                broadcastError = String(localized: "Stream saved. ") + error
+            } else {
+                close()
+            }
+        }
+    }
+
+    private func close() {
+        createStreamWizard.presenting = false
+        createStreamWizard.presentingSetup = false
+        createStreamWizard.presentingYouTube = false
     }
 
     var body: some View {
@@ -52,19 +77,6 @@ struct StreamWizardYouTubeSettingsView: View {
                 Text("For example the show or topic, so you can pick it quickly when going live.")
             }
             Section {
-                TextField(String("xxxx-xxxx-xxxx-xxxx-xxxx"), text: $createStreamWizard.directStreamKey)
-                    .textInputAutocapitalization(.never)
-                    .disableAutocorrection(true)
-            } header: {
-                Text("Stream key")
-            } footer: {
-                VStack(alignment: .leading) {
-                    Text("Copy it from YouTube Studio → Go live → Stream:")
-                    Link(youTubeStudioLiveUrl, destination: URL(string: youTubeStudioLiveUrl)!)
-                        .font(.footnote)
-                }
-            }
-            Section {
                 Picker("Quality", selection: $createStreamWizard.youTubeQuality) {
                     ForEach(YouTubeQualityPreset.allCases, id: \.self) {
                         Text($0.toString())
@@ -74,48 +86,81 @@ struct StreamWizardYouTubeSettingsView: View {
                 Text("H.264 over encrypted RTMPS with a 2 second keyframe interval, as YouTube recommends.")
             }
             Section {
-                if !youTubeStream.isYouTubeAuthorized() {
-                    TextButtonView("Fill in with Google login") {
-                        model.youTubeSignIn(stream: youTubeStream)
+                if !accountKey().isEmpty, !useOtherKey {
+                    HStack {
+                        Text("Stream key")
+                        Spacer()
+                        Text(maskedStreamKey(accountKey()))
+                            .foregroundStyle(.secondary)
+                    }
+                    Button("Use a different key") {
+                        useOtherKey = true
+                        createStreamWizard.directStreamKey = ""
                     }
                 } else {
-                    TextButtonView("Logout") {
-                        model.youTubeSignOut(stream: youTubeStream)
+                    TextField(String("xxxx-xxxx-xxxx-xxxx-xxxx"), text: $createStreamWizard.directStreamKey)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                }
+            } header: {
+                Text("Stream key")
+            } footer: {
+                if !accountKey().isEmpty, !useOtherKey {
+                    Text("From your YouTube account.")
+                } else {
+                    VStack(alignment: .leading) {
+                        Text("Sign in under YouTube account to fill this in, or copy it from YouTube Studio:")
+                        Link(youTubeStudioLiveUrl, destination: URL(string: youTubeStudioLiveUrl)!)
+                            .font(.footnote)
                     }
                 }
-            } footer: {
-                Text("Optional. Fills in the stream key and enables chat.")
             }
+            YouTubeBroadcastFieldsView(details: broadcast,
+                                       signedIn: model.isYouTubeAccountSignedIn())
             Section {
-                TextButtonView("Create") {
-                    model.createStreamFromWizard()
-                    createStreamWizard.presenting = false
-                    createStreamWizard.presentingSetup = false
+                if creating {
+                    HCenter {
+                        ProgressView()
+                    }
+                } else if broadcastError != nil {
+                    TextButtonView("Done") {
+                        close()
+                    }
+                } else {
+                    TextButtonView("Create") {
+                        create()
+                    }
+                    .disabled(!canCreate())
                 }
-                .disabled(!canCreate())
+            } footer: {
+                if let broadcastError {
+                    Text(broadcastError)
+                        .foregroundStyle(.red)
+                }
             }
         }
         .onAppear {
             createStreamWizard.platform = .youTube
             createStreamWizard.networkSetup = .direct
+            createStreamWizard.directIngest = youTubeRtmpsIngest
             if createStreamWizard.name.isEmpty {
                 createStreamWizard.name = makeUniqueName(name: String(localized: "YouTube"),
                                                          existingNames: model.database.streams)
             }
-            if createStreamWizard.directIngest.isEmpty {
-                createStreamWizard.directIngest = youTubeRtmpsIngest
-            }
-            youTubeStream.youTubeAuthState = nil
-        }
-        .onChange(of: youTubeStream.youTubeAuthState) { authState in
-            if authState != nil {
-                fetchLiveStreams()
-                fetchChannelHandle()
+            if createStreamWizard.directStreamKey.isEmpty {
+                createStreamWizard.directStreamKey = accountKey()
             }
         }
-        .navigationTitle("YouTube")
+        .navigationTitle("Add YouTube stream")
         .toolbar {
             CreateStreamWizardToolbar(createStreamWizard: createStreamWizard)
         }
     }
+}
+
+func maskedStreamKey(_ key: String) -> String {
+    guard key.count > 4 else {
+        return key
+    }
+    return "••••" + key.suffix(4)
 }

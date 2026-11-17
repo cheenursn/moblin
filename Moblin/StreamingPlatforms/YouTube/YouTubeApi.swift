@@ -182,6 +182,7 @@ class YouTubeApi {
         let subPath = makeUrl("liveBroadcasts", [
             ("part", "snippet,contentDetails,status"),
             ("broadcastStatus", status),
+            ("broadcastType", "all"),
         ])
         doGet(subPath: subPath) {
             switch $0 {
@@ -234,6 +235,94 @@ class YouTubeApi {
                 onCompleted(.authError)
             case .error:
                 onCompleted(.error)
+            }
+        }
+    }
+
+    func insertLiveBroadcast(details: YouTubeBroadcastDetails,
+                             startNow: Bool,
+                             onCompleted: @escaping (NetworkResponse<YouTubeApiLiveBroadcast>) -> Void)
+    {
+        let subPath = makeUrl("liveBroadcasts", [("part", "snippet,contentDetails,status")])
+        let body: [String: Any] = [
+            "snippet": [
+                "title": details.title,
+                "description": details.description,
+                "scheduledStartTime": (startNow ? Date() : details.startTime).ISO8601Format(),
+            ],
+            "status": [
+                "privacyStatus": details.visibility.rawValue,
+                "selfDeclaredMadeForKids": details.madeForKids,
+            ],
+            "contentDetails": [
+                "enableAutoStart": details.autoStart,
+                "enableAutoStop": details.autoStop,
+                "enableDvr": details.dvr,
+                "latencyPreference": details.latency.rawValue,
+                "monitorStream": ["enableMonitorStream": false],
+            ],
+        ]
+        doPost(subPath: subPath, body: serialize(body)) {
+            switch $0 {
+            case let .success(data):
+                if let response = try? JSONDecoder().decode(YouTubeApiLiveBroadcast.self, from: data) {
+                    onCompleted(.success(response))
+                } else {
+                    onCompleted(.error)
+                }
+            case .authError:
+                onCompleted(.authError)
+            case .error:
+                onCompleted(.error)
+            }
+        }
+    }
+
+    func setThumbnail(videoId: String, jpeg: Data, onCompleted: @escaping (Bool) -> Void) {
+        guard let url = URL(string: "https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=\(videoId)")
+        else {
+            onCompleted(false)
+            return
+        }
+        var request = createRequest(url: url, method: "POST")
+        request.setContentType("image/jpeg")
+        request.httpBody = jpeg
+        doRequest(request) {
+            if case .success = $0 {
+                onCompleted(true)
+            } else {
+                onCompleted(false)
+            }
+        }
+    }
+
+    func updateVideoCategoryAndTags(videoId: String,
+                                    title: String,
+                                    description: String,
+                                    categoryId: String,
+                                    tags: [String],
+                                    onCompleted: @escaping (Bool) -> Void)
+    {
+        guard let url = URL(string: "https://youtube.googleapis.com/youtube/v3/videos?part=snippet") else {
+            onCompleted(false)
+            return
+        }
+        let body: [String: Any] = [
+            "id": videoId,
+            "snippet": [
+                "title": title,
+                "description": description,
+                "categoryId": categoryId,
+                "tags": tags,
+            ],
+        ]
+        var request = createRequest(url: url, method: "PUT", json: true)
+        request.httpBody = serialize(body)
+        doRequest(request) {
+            if case .success = $0 {
+                onCompleted(true)
+            } else {
+                onCompleted(false)
             }
         }
     }

@@ -250,7 +250,7 @@ extension Model {
         } catch {
             return error.localizedDescription
         }
-        if createStreamWizard.presenting || createStreamWizard.presentingSetup {
+        if createStreamWizard.presenting || createStreamWizard.presentingSetup || createStreamWizard.presentingYouTube {
             handleSettingsUrlsInWizard(settings: settings)
         } else {
             importSettingsWithConfirmation {

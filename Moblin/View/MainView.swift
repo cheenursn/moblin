@@ -134,8 +134,12 @@ private struct MenuView: View {
             }
         case .streamSwitcher:
             NavigationStack {
-                QuickButtonStreamSwitcherView(database: model.database)
-                    .navigationBarTitleDisplayMode(.inline)
+                YouTubeStreamsView(database: model.database,
+                                   createStreamWizard: model.createStreamWizard)
+                {
+                    model.toggleShowingPanel(type: nil, panel: .none)
+                }
+                .navigationBarTitleDisplayMode(.inline)
             }
         case .overlays:
             NavigationStack {
@@ -622,8 +626,13 @@ struct MainView: View {
             if model.showingPanel != .none {
                 panel()
                     .frame(width: orientation.isPortrait ? nil : panelWidth)
+                    .clipped()
             }
         }
+    }
+
+    private func panelCoversTallControlBar() -> Bool {
+        orientation.unfoldedPosture?.isTall == true && model.showingPanel != .none && !model.panelHidden
     }
 
     private func main() -> some View {
@@ -631,7 +640,9 @@ struct MainView: View {
             AnyLayout(HStackLayout(spacing: 0))
         return layout {
             streamAndPanel()
-            if orientation.isPortrait {
+            if panelCoversTallControlBar() {
+                EmptyView()
+            } else if orientation.isPortrait {
                 ControlBarPortraitView(model: model, quickButtons: quickButtons, orientation: orientation)
             } else {
                 ControlBarLandscapeView(model: model,

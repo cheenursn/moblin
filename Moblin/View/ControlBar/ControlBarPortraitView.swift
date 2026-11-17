@@ -268,7 +268,7 @@ private struct TallGroupedView: View {
                         columns: max(Int(geometry.size.width / (controlBarButtonSize + 12)), 1),
                         groups: [.capture] + QuickButtonGroup.right
                     )
-                    .padding(.top, 5)
+                    .padding(.top, 12)
                     .controlBarDoubleTapArea(model: model)
                 }
                 .scrollIndicators(.hidden)
@@ -276,16 +276,13 @@ private struct TallGroupedView: View {
             .padding(.leading, 10)
             VStack(spacing: 0) {
                 IconAndSettingsView(model: model, store: model.store)
-                if !streamOverlay.showingWidePane {
-                    RightOverlayBottomView(database: model.database,
-                                           show: model.database.show,
-                                           streamOverlay: model.streamOverlay,
-                                           zoom: model.zoom,
-                                           width: 160)
-                        .padding(.top, 8)
-                } else {
-                    Spacer(minLength: 0)
-                }
+                    .padding(.top, 12)
+                TallRightColumnView(model: model,
+                                    database: model.database,
+                                    show: model.database.show,
+                                    zoom: model.zoom,
+                                    width: 160)
+                    .padding(.top, 8)
                 StreamButton(show: model.show)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 10)
@@ -304,7 +301,7 @@ struct ControlBarPortraitView: View {
     var body: some View {
         if orientation.unfoldedPosture == .tallCameraTop {
             TallGroupedView(model: model, status: model.statusOther, streamOverlay: model.streamOverlay)
-                .padding(.top, 6)
+                .padding(.top, 8)
                 .frame(height: model.tallControlBarHeight())
                 .controlBarFilter(model: model)
         } else {

@@ -30,9 +30,9 @@ struct SettingsView: View {
             }
             Section {
                 NavigationLink {
-                    StreamsSettingsView(createStreamWizard: model.createStreamWizard, database: database)
+                    YouTubeStreamsView(database: database, createStreamWizard: model.createStreamWizard) {}
                 } label: {
-                    Label("Streams", systemImage: "dot.radiowaves.left.and.right")
+                    Label("YouTube streams", systemImage: "play.rectangle.fill")
                 }
                 NavigationLink {
                     ScenesSettingsView(model: model, database: database)

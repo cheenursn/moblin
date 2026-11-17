@@ -23,6 +23,7 @@ class CreateStreamWizard: ObservableObject {
     let youTubeStream = SettingsStream(name: "")
     @Published var presenting = false
     @Published var presentingSetup = false
+    @Published var presentingYouTube = false
     @Published var showTwitchAuth = false
     @Published var showKickAuth = false
     @Published var name = ""
@@ -344,7 +345,7 @@ extension Model {
     }
 
     func setCurrentStream() {
-        setCurrentStream(stream: database.streams.first(where: { $0.enabled }) ?? fallbackStream)
+        setCurrentStream(stream: database.streams.first(where: { $0.enabled }) ?? database.streams.first ?? fallbackStream)
     }
 
     func findStream(id: UUID) -> SettingsStream? {

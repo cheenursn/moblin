@@ -38,6 +38,7 @@ struct StreamWizardGeneralSettingsView: View {
                     model.createStreamFromWizard()
                     createStreamWizard.presenting = false
                     createStreamWizard.presentingSetup = false
+                    createStreamWizard.presentingYouTube = false
                 }
                 .disabled(createStreamWizard.name.isEmpty)
             }

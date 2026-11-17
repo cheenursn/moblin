@@ -12,8 +12,8 @@ private struct StreamDescriptionView: View {
     @ObservedObject var stream: SettingsStream
     let youTubeStream: YouTubeApiLiveBroadcast
     let ingests: [YouTubeApiLiveStream]
-    let thumbnailUrl: URL
-    let startTime: Date
+    let thumbnailUrl: URL?
+    let startTime: Date?
     @State var presentingConfigureConfirm: Bool = false
 
     private func details() -> String {
@@ -39,21 +39,31 @@ private struct StreamDescriptionView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                CacheAsyncImage(url: thumbnailUrl) { image in
-                    image
-                        .resizable()
-                        .scaledToFit()
-                } placeholder: {
-                    Image("AppIconNoBackground")
-                        .resizable()
-                        .scaledToFit()
+                Group {
+                    if let thumbnailUrl {
+                        CacheAsyncImage(url: thumbnailUrl) { image in
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        } placeholder: {
+                            Image("AppIconNoBackground")
+                                .resizable()
+                                .scaledToFit()
+                        }
+                    } else {
+                        Image("AppIconNoBackground")
+                            .resizable()
+                            .scaledToFit()
+                    }
                 }
                 .frame(width: 50, height: 50)
                 .clipShape(RoundedRectangle(cornerRadius: 5))
                 VStack(alignment: .leading) {
                     Text(youTubeStream.snippet.title)
-                    Text(startTime.formatted())
-                        .font(.caption)
+                    if let startTime {
+                        Text(startTime.formatted())
+                            .font(.caption)
+                    }
                     Text(details())
                         .font(.caption)
                 }
@@ -119,41 +129,39 @@ private struct YouTubeStreamView: View {
     }
 
     var body: some View {
-        if let scheduledStartTime = youTubeStream.snippet.scheduledStartTime,
-           let date = ISO8601DateFormatter().date(from: scheduledStartTime),
-           let thumbnailUrl = URL(string: youTubeStream.snippet.thumbnails.default.url)
-        {
-            HStack {
-                StreamDescriptionView(model: model,
-                                      stream: stream,
-                                      youTubeStream: youTubeStream,
-                                      ingests: ingests,
-                                      thumbnailUrl: thumbnailUrl,
-                                      startTime: date)
-                Spacer()
-                HCenter {
-                    if destroying {
-                        ProgressView()
-                    } else {
-                        Button {
-                            presentingConfirm = true
-                        } label: {
-                            Image(systemName: destroyImage)
-                                .font(.title)
-                                .tint(.red)
-                        }
-                        .buttonStyle(.borderless)
+        let startTime = youTubeStream.snippet.scheduledStartTime.flatMap {
+            ISO8601DateFormatter().date(from: $0)
+        }
+        HStack {
+            StreamDescriptionView(model: model,
+                                  stream: stream,
+                                  youTubeStream: youTubeStream,
+                                  ingests: ingests,
+                                  thumbnailUrl: URL(string: youTubeStream.snippet.thumbnails.default.url),
+                                  startTime: startTime)
+            Spacer()
+            HCenter {
+                if destroying {
+                    ProgressView()
+                } else {
+                    Button {
+                        presentingConfirm = true
+                    } label: {
+                        Image(systemName: destroyImage)
+                            .font(.title)
+                            .tint(.red)
                     }
-                }
-                .frame(width: 50)
-                .confirmationDialog("", isPresented: $presentingConfirm) {
-                    Button(destroyText, role: .destructive) {
-                        handleDestroy()
-                    }
+                    .buttonStyle(.borderless)
                 }
             }
-            .padding(.trailing, 5)
+            .frame(width: 50)
+            .confirmationDialog("", isPresented: $presentingConfirm) {
+                Button(destroyText, role: .destructive) {
+                    handleDestroy()
+                }
+            }
         }
+        .padding(.trailing, 5)
     }
 }
 
@@ -161,8 +169,9 @@ private struct StreamsView: View {
     let model: Model
     @ObservedObject var stream: SettingsStream
     let title: LocalizedStringKey
-    @Binding var streams: [YouTubeApiLiveBroadcast]
+    @Binding var streams: [YouTubeApiLiveBroadcast]?
     @Binding var loadError: String?
+    let emptyText: String
     @Binding var ingests: [YouTubeApiLiveStream]
     let destroyImage: String
     let destroyText: String
@@ -170,7 +179,7 @@ private struct StreamsView: View {
 
     var body: some View {
         Section {
-            ForEach(streams) { youTubeStream in
+            ForEach(streams ?? []) { youTubeStream in
                 YouTubeStreamView(model: model,
                                   stream: stream,
                                   youTubeStream: youTubeStream,
@@ -179,13 +188,17 @@ private struct StreamsView: View {
                                   destroyText: destroyText,
                                   destroy: destroy)
             }
-            if streams.isEmpty {
+            if let loadError {
+                Text(loadError)
+                    .foregroundStyle(.red)
+            } else if let streams {
+                if streams.isEmpty {
+                    Text(emptyText)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
                 HCenter {
-                    if let loadError {
-                        Text(loadError)
-                    } else {
-                        Text("None")
-                    }
+                    ProgressView()
                 }
             }
         } header: {
@@ -327,11 +340,15 @@ struct StreamYouTubeScheduleStreamView: View {
     @ObservedObject var stream: SettingsStream
     @State private var schedulingStreamState: ScheduleStreamState = .idle
     @State private var presenting: Bool = false
-    @State private var liveStreams: [YouTubeApiLiveBroadcast] = []
+    @State private var liveStreams: [YouTubeApiLiveBroadcast]?
     @State private var liveStreamsLoadError: String?
-    @State private var upcomingStreams: [YouTubeApiLiveBroadcast] = []
+    @State private var upcomingStreams: [YouTubeApiLiveBroadcast]?
     @State private var upcomingStreamsLoadError: String?
     @State private var ingests: [YouTubeApiLiveStream] = []
+
+    private func signInFailedText() -> String {
+        String(localized: "YouTube sign-in failed. Sign out and sign in again in this stream's YouTube settings.")
+    }
 
     private func loadStreams() {
         loadActiveStreams()
@@ -341,15 +358,20 @@ struct StreamYouTubeScheduleStreamView: View {
 
     private func loadActiveStreams() {
         liveStreamsLoadError = nil
+        liveStreams = nil
         model.getYouTubeApi(stream: stream) { youTubeApi in
-            youTubeApi?.listLiveBroadcasts(status: "active") {
+            guard let youTubeApi else {
+                liveStreamsLoadError = signInFailedText()
+                return
+            }
+            youTubeApi.listLiveBroadcasts(status: "active") {
                 switch $0 {
                 case let .success(response):
                     liveStreams = response.items
                 case .authError:
-                    liveStreamsLoadError = "Error"
+                    liveStreamsLoadError = signInFailedText()
                 case .error:
-                    liveStreamsLoadError = "Error"
+                    liveStreamsLoadError = String(localized: "Couldn't reach YouTube. Check your internet connection and try again.")
                 }
             }
         }
@@ -357,15 +379,20 @@ struct StreamYouTubeScheduleStreamView: View {
 
     private func loadUpcomingStreams() {
         upcomingStreamsLoadError = nil
+        upcomingStreams = nil
         model.getYouTubeApi(stream: stream) { youTubeApi in
-            youTubeApi?.listLiveBroadcasts(status: "upcoming") {
+            guard let youTubeApi else {
+                upcomingStreamsLoadError = signInFailedText()
+                return
+            }
+            youTubeApi.listLiveBroadcasts(status: "upcoming") {
                 switch $0 {
                 case let .success(response):
-                    upcomingStreams = response.items.filter { $0.snippet.scheduledStartTime != nil }
+                    upcomingStreams = response.items
                 case .authError:
-                    upcomingStreamsLoadError = "Error"
+                    upcomingStreamsLoadError = signInFailedText()
                 case .error:
-                    upcomingStreamsLoadError = "Error"
+                    upcomingStreamsLoadError = String(localized: "Couldn't reach YouTube. Check your internet connection and try again.")
                 }
             }
         }
@@ -389,7 +416,7 @@ struct StreamYouTubeScheduleStreamView: View {
     private func stopLiveStream(id: String, youTubeApi: YouTubeApi, onCompleted: @escaping () -> Void) {
         youTubeApi.transitionLiveBroadcast(id: id, status: "complete") {
             if $0 {
-                liveStreams.removeAll { $0.id == id }
+                liveStreams?.removeAll { $0.id == id }
             }
             onCompleted()
         }
@@ -399,7 +426,7 @@ struct StreamYouTubeScheduleStreamView: View {
         youTubeApi.deleteLiveBroadcast(id: id) {
             switch $0 {
             case .success:
-                upcomingStreams.removeAll { $0.id == id }
+                upcomingStreams?.removeAll { $0.id == id }
             default:
                 break
             }
@@ -424,6 +451,10 @@ struct StreamYouTubeScheduleStreamView: View {
                                 title: "Live",
                                 streams: $liveStreams,
                                 loadError: $liveStreamsLoadError,
+                                emptyText: String(localized: """
+                                No broadcast is live right now. When you go live, YouTube creates one and it \
+                                appears here.
+                                """),
                                 ingests: $ingests,
                                 destroyImage: "stop",
                                 destroyText: String(localized: "End"),
@@ -433,6 +464,10 @@ struct StreamYouTubeScheduleStreamView: View {
                                 title: "Upcoming",
                                 streams: $upcomingStreams,
                                 loadError: $upcomingStreamsLoadError,
+                                emptyText: String(localized: """
+                                No upcoming broadcasts on your channel. Use Schedule above to create one, or \
+                                just go live with your stream key.
+                                """),
                                 ingests: $ingests,
                                 destroyImage: "trash",
                                 destroyText: String(localized: "Delete"),

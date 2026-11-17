@@ -569,6 +569,7 @@ final class Model: NSObject, ObservableObject {
     let battery = Battery()
     let remoteControl = RemoteControl()
     let createStreamWizard = CreateStreamWizard()
+    let youTubeAccount = makeYouTubeAccountStream()
     let createWidgetWizard = CreateWidgetWizard()
     let createSceneWizard = CreateSceneWizard()
     let zoom = Zoom()
@@ -1362,6 +1363,7 @@ final class Model: NSObject, ObservableObject {
         setSelectedStreamDeck()
         startStreamIfAutoGoLive()
         applyBhoomiDefaultsOnce()
+        youTubeAccount.loadFromKeychain()
         updateYouTubeVideoTitle()
         foldableReady = true
         DispatchQueue.main.async {

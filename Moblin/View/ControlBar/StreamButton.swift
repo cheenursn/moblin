@@ -60,50 +60,28 @@ private struct EndButtonView: View {
 
 private struct GoLiveButtonView: View {
     @EnvironmentObject var model: Model
-    @Binding var presentingGoLiveNotificationConfirm: Bool
-    @State private var presentingGoLiveConfirm = false
-
-    var body: some View {
-        StreamButtonText(database: model.database, text: String(localized: "Go Live"))
-            .onTapGesture {
-                presentingGoLiveConfirm = true
-            }
-            .onLongPressGesture {
-                model.toggleShowingPanel(type: nil, panel: .streamingButtonSettings)
-            }
-            .confirmationDialog(String(localized: "Choose where to go live"),
-                                isPresented: $presentingGoLiveConfirm,
-                                titleVisibility: .visible)
-            {
-                ForEach(model.goLiveStreams()) { stream in
-                    Button(String(localized: "Go live to \(stream.name)")) {
-                        model.goLive(stream: stream)
-                        if model.isGoLiveNotificationConfigured() {
-                            presentingGoLiveNotificationConfirm = true
-                        }
-                    }
-                }
-            }
-    }
-}
-
-private struct SetupButtonView: View {
-    @EnvironmentObject var model: Model
+    @ObservedObject var database: Database
     @ObservedObject var createStreamWizard: CreateStreamWizard
+    @State private var presentingStreams = false
 
     var body: some View {
-        StreamButtonText(database: model.database, text: String(localized: "Setup"))
+        StreamButtonText(database: database,
+                         text: database.streams.isEmpty ? String(localized: "Setup") : String(localized: "Go Live"))
             .onTapGesture {
-                model.resetWizard()
-                createStreamWizard.presentingSetup = true
+                presentingStreams = true
             }
             .onLongPressGesture {
                 model.toggleShowingPanel(type: nil, panel: .streamingButtonSettings)
             }
-            .sheet(isPresented: $createStreamWizard.presentingSetup) {
+            .sheet(isPresented: $presentingStreams) {
                 NavigationStack {
-                    StreamWizardSettingsView(model: model, createStreamWizard: createStreamWizard)
-                        .navigationBarTitleDisplayMode(.inline)
+                    YouTubeStreamsView(database: database, createStreamWizard: createStreamWizard) {
+                        presentingStreams = false
+                    }
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        CloseToolbar(presenting: $presentingStreams)
+                    }
                 }
             }
     }
@@ -119,12 +97,10 @@ struct StreamButton: View {
             EndButtonView(presentingGoLiveNotificationConfirm: $presentingGoLiveNotificationConfirm)
                 .disabled(show.chatPhone)
                 .opacity(show.chatPhone ? 0.5 : 1)
-        } else if model.isStreamConfigured() {
-            GoLiveButtonView(presentingGoLiveNotificationConfirm: $presentingGoLiveNotificationConfirm)
+        } else {
+            GoLiveButtonView(database: model.database, createStreamWizard: model.createStreamWizard)
                 .disabled(show.chatPhone)
                 .opacity(show.chatPhone ? 0.5 : 1)
-        } else {
-            SetupButtonView(createStreamWizard: model.createStreamWizard)
         }
     }
 }

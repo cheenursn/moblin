@@ -184,7 +184,7 @@ struct StreamOverlayView: View {
                     BannersView(model: model, banners: model.banners)
                         .frame(maxWidth: orientation.isPortrait ? .infinity : 400)
                 }
-                if orientation.unfoldedPosture != .tallCameraTop || streamOverlay.showingWidePane {
+                if orientation.unfoldedPosture != .tallCameraTop {
                     HStack {
                         if orientation.unfoldedPosture?.fillsHeightAlignedLeft != true {
                             Spacer()
@@ -207,6 +207,13 @@ struct StreamOverlayView: View {
                             Spacer()
                         }
                     }
+                }
+                if orientation.unfoldedPosture == .tallCameraTop {
+                    TallVideoControlsView(model: model,
+                                          database: model.database,
+                                          show: model.database.show,
+                                          streamOverlay: streamOverlay,
+                                          zoom: model.zoom)
                 }
                 HStack {
                     Spacer()

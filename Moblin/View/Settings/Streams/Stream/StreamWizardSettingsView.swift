@@ -26,6 +26,7 @@ struct CreateStreamWizardToolbar: ToolbarContent {
             Button {
                 createStreamWizard.presenting = false
                 createStreamWizard.presentingSetup = false
+                createStreamWizard.presentingYouTube = false
             } label: {
                 Image(systemName: "xmark")
             }

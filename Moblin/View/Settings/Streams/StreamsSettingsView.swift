@@ -12,7 +12,11 @@ private struct StreamItemView: View {
     }
 
     private func delete() {
-        database.streams.removeAll { $0 === stream }
+        model.deleteStream(stream)
+    }
+
+    private func canDelete() -> Bool {
+        !stream.enabled || !(model.isLive || model.isRecording)
     }
 
     var body: some View {
@@ -31,7 +35,7 @@ private struct StreamItemView: View {
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            if !stream.enabled {
+            if canDelete() {
                 SwipeLeftToDeleteButtonView {
                     delete()
                 }
@@ -45,7 +49,7 @@ private struct StreamItemView: View {
                 ContextMenuDuplicateButtonView {
                     duplicate()
                 }
-                if !stream.enabled {
+                if canDelete() {
                     ContextMenuDeleteButtonView {
                         delete()
                     }

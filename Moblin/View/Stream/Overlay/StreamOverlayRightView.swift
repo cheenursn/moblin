@@ -708,53 +708,65 @@ private struct RightOverlayBottomVerticalView: View {
     @ObservedObject var zoom: Zoom
     let width: CGFloat
 
+    @ViewBuilder
+    private func effectControls() -> some View {
+        StreamOverlayRightFaceView(model: model, face: database.face)
+        if streamOverlay.showingPixellate {
+            StreamOverlayRightPixellateView(model: model, database: database)
+        }
+        if streamOverlay.showingWhirlpool {
+            StreamOverlayRightWhirlpoolView(model: model, database: database)
+        }
+        if streamOverlay.showingPinch {
+            StreamOverlayRightPinchView(model: model, database: database)
+        }
+        if streamOverlay.showingCamera, model.orientation.unfoldedPosture != .tallCameraTop {
+            StreamOverlayRightCameraSettingsControlView(model: model,
+                                                        camera: model.camera,
+                                                        show: model.camera.show)
+        }
+        if streamOverlay.isTorchOn, !streamOverlay.isFrontCameraSelected {
+            StreamOverlayRightTorchView(model: model, database: database)
+        }
+        if show.zoomSlider, zoom.hasZoom {
+            StreamOverlayRightZoomSliderView(model: model)
+        }
+    }
+
     var body: some View {
-        HStack(alignment: .bottom) {
-            Spacer()
-            if streamOverlay.showMediaPlayerControls {
-                StreamOverlayRightMediaPlayerControlsView(model: model, mediaPlayer: model
-                    .mediaPlayerPlayer)
-            } else {
-                VStack(alignment: .trailing) {
-                    StreamOverlayRightFaceView(model: model, face: database.face)
-                    if streamOverlay.showingPixellate {
-                        StreamOverlayRightPixellateView(model: model, database: database)
-                    }
-                    if streamOverlay.showingWhirlpool {
-                        StreamOverlayRightWhirlpoolView(model: model, database: database)
-                    }
-                    if streamOverlay.showingPinch {
-                        StreamOverlayRightPinchView(model: model, database: database)
-                    }
-                    if streamOverlay.showingCamera {
-                        StreamOverlayRightCameraSettingsControlView(model: model,
-                                                                    camera: model.camera,
-                                                                    show: model.camera.show)
-                    }
-                    if streamOverlay.isTorchOn, !streamOverlay.isFrontCameraSelected {
-                        StreamOverlayRightTorchView(model: model, database: database)
-                    }
-                    if show.zoomSlider, zoom.hasZoom {
-                        StreamOverlayRightZoomSliderView(model: model)
-                    }
-                }
-                if show.zoomPresets, zoom.hasZoom, model.orientation.unfoldedPosture != .tallCameraTop {
-                    StreamOverlayRightZoomPresetVSelctorView(model: model,
-                                                             zoom: zoom,
-                                                             width: width)
-                }
-            }
-            if model.orientation.unfoldedPosture == .tallCameraTop {
-                VStack(spacing: 6) {
+        if model.orientation.unfoldedPosture == .tallCameraTop {
+            VStack(alignment: .trailing, spacing: 6) {
+                if streamOverlay.showMediaPlayerControls {
+                    StreamOverlayRightMediaPlayerControlsView(model: model, mediaPlayer: model
+                        .mediaPlayerPlayer)
+                } else {
+                    effectControls()
                     if show.zoomPresets, zoom.hasZoom {
                         StreamOverlayRightZoomPresetSelctorView(model: model, zoom: zoom, width: width)
                     }
-                    StreamOverlayRightSceneVSelectorView(database: database,
-                                                         sceneSelector: model.sceneSelector,
-                                                         width: width,
-                                                         segmentWidth: width - 10)
                 }
-            } else {
+                StreamOverlayRightSceneVSelectorView(database: database,
+                                                     sceneSelector: model.sceneSelector,
+                                                     width: width,
+                                                     segmentWidth: width - 10)
+            }
+            .frame(width: width, alignment: .trailing)
+        } else {
+            HStack(alignment: .bottom) {
+                Spacer()
+                if streamOverlay.showMediaPlayerControls {
+                    StreamOverlayRightMediaPlayerControlsView(model: model, mediaPlayer: model
+                        .mediaPlayerPlayer)
+                } else {
+                    VStack(alignment: .trailing) {
+                        effectControls()
+                    }
+                    if show.zoomPresets, zoom.hasZoom {
+                        StreamOverlayRightZoomPresetVSelctorView(model: model,
+                                                                 zoom: zoom,
+                                                                 width: width)
+                    }
+                }
                 StreamOverlayRightSceneVSelectorView(database: database,
                                                      sceneSelector: model.sceneSelector,
                                                      width: width)

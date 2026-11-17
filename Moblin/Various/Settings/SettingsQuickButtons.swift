@@ -170,7 +170,7 @@ enum SettingsQuickButtonType: String, Codable, CaseIterable {
         case .cameraPreview:
             String(localized: "Camera preview")
         case .stream:
-            String(localized: "Switch stream")
+            String(localized: "YouTube streams")
         case .grid:
             String(localized: "Grid")
         case .cameraLevel:

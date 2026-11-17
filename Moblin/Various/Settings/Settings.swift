@@ -1329,6 +1329,8 @@ class Database: Codable, ObservableObject {
     var bhoomiOverlaysAdded: Bool = false
     var bhoomiFramesAdded: Bool = false
     var bhoomiPortraitFramesAdded: Bool = false
+    var youTubeAccountStreamKey: String = ""
+    var youTubeAccountHandle: String = ""
     var workoutDevices: SettingsWorkoutDevices = .init()
     var blackSharkCoolerDevices: SettingsBlackSharkCoolerDevices = .init()
     var remoteSceneId: UUID?
@@ -1462,6 +1464,8 @@ class Database: Codable, ObservableObject {
         case bhoomiOverlaysAdded
         case bhoomiFramesAdded
         case bhoomiPortraitFramesAdded
+        case youTubeAccountStreamKey
+        case youTubeAccountHandle
         case heartRateDevices
         case phoneCoolerDevices
         case remoteSceneId
@@ -1561,6 +1565,8 @@ class Database: Codable, ObservableObject {
         try container.encode(.bhoomiOverlaysAdded, bhoomiOverlaysAdded)
         try container.encode(.bhoomiFramesAdded, bhoomiFramesAdded)
         try container.encode(.bhoomiPortraitFramesAdded, bhoomiPortraitFramesAdded)
+        try container.encode(.youTubeAccountStreamKey, youTubeAccountStreamKey)
+        try container.encode(.youTubeAccountHandle, youTubeAccountHandle)
         try container.encode(.heartRateDevices, workoutDevices)
         try container.encode(.phoneCoolerDevices, blackSharkCoolerDevices)
         try container.encode(.remoteSceneId, remoteSceneId)
@@ -1751,6 +1757,8 @@ class Database: Codable, ObservableObject {
         bhoomiOverlaysAdded = container.decode(.bhoomiOverlaysAdded, Bool.self, false)
         bhoomiFramesAdded = container.decode(.bhoomiFramesAdded, Bool.self, false)
         bhoomiPortraitFramesAdded = container.decode(.bhoomiPortraitFramesAdded, Bool.self, false)
+        youTubeAccountStreamKey = container.decode(.youTubeAccountStreamKey, String.self, "")
+        youTubeAccountHandle = container.decode(.youTubeAccountHandle, String.self, "")
     }
 
     func findScene(id: UUID) -> SettingsScene? {
