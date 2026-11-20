@@ -95,7 +95,7 @@ class Keychain {
             return false
         }
         guard status == errSecSuccess else {
-            logger.info("\(logPrefix): Failed to update item in keychain")
+            logger.info("\(logPrefix): Failed to update item in keychain with status \(status)")
             return false
         }
         return true
@@ -110,7 +110,7 @@ class Keychain {
         ]
         let status = SecItemAdd(attributes as CFDictionary, nil)
         guard status == errSecSuccess else {
-            logger.info("\(logPrefix): Failed to add item to keychain")
+            logger.info("\(logPrefix): Failed to add item to keychain with status \(status)")
             return
         }
     }

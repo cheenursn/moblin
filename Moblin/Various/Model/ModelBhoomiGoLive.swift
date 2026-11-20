@@ -3,14 +3,26 @@ import Foundation
 extension Model {
     func goLive(stream: SettingsStream) {
         let broadcast = stream.youTubeBroadcast
-        guard broadcast.enabled, broadcast.startNow, isYouTubeAccountSignedIn() else {
+        logger.info("youtube-broadcast: Go live \(stream.name), options \(broadcast.enabled), start now \(broadcast.startNow)")
+        guard broadcast.enabled, broadcast.startNow else {
+            goLiveNow(stream: stream)
+            return
+        }
+        guard isYouTubeAccountSignedIn() else {
+            logger.info("youtube-broadcast: Not signed in")
+            makeErrorToast(title: String(localized: "Not signed in to YouTube"),
+                           subTitle: String(localized: "Going live without your title and settings. Sign in under YouTube streams → YouTube account."))
             goLiveNow(stream: stream)
             return
         }
         makeToast(title: String(localized: "Creating YouTube broadcast…"))
         createYouTubeBroadcast(stream: stream, details: broadcast, startNow: true) { error in
             if let error {
+                logger.info("youtube-broadcast: Failed: \(error)")
                 self.makeErrorToast(title: error)
+            } else {
+                logger.info("youtube-broadcast: Created \(stream.youTubeVideoIds)")
+                self.makeToast(title: String(localized: "YouTube broadcast created"))
             }
             self.storeSettings()
             self.goLiveNow(stream: stream)

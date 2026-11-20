@@ -183,6 +183,7 @@ extension Model {
             }
             youTubeApi.listLiveStreams { response in
                 guard case let .success(liveStreams) = response else {
+                    logger.info("youtube-broadcast: List stream keys failed")
                     onCompleted(String(localized: "Couldn't read your YouTube stream keys."))
                     return
                 }
@@ -195,10 +196,12 @@ extension Model {
                 }
                 youTubeApi.insertLiveBroadcast(details: details, startNow: startNow ?? details.startNow) { response in
                     guard case let .success(broadcast) = response else {
+                        logger.info("youtube-broadcast: Insert broadcast failed")
                         onCompleted(String(localized: "YouTube refused to create the broadcast."))
                         return
                     }
                     youTubeApi.bindLiveBroadcast(boardcastId: broadcast.id, streamId: liveStream.id) { bound in
+                        logger.info("youtube-broadcast: Broadcast \(broadcast.id) bind to \(liveStream.id) \(bound)")
                         guard bound else {
                             onCompleted(String(localized: "Broadcast created but couldn't be linked to the key."))
                             return

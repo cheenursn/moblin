@@ -10,7 +10,13 @@ func makeYouTubeAccountStream() -> SettingsStream {
 
 extension Model {
     func isYouTubeAccountSignedIn() -> Bool {
-        youTubeAccount.isYouTubeAuthorized()
+        if !youTubeAccount.isYouTubeAuthorized(),
+           let signedIn = database.streams.first(where: { $0.isYouTubeAuthorized() })
+        {
+            youTubeAccount.youTubeAuthState = signedIn.youTubeAuthState
+            youTubeAccount.storeToKeychain()
+        }
+        return youTubeAccount.isYouTubeAuthorized()
     }
 
     func youTubeAccountSignIn() {

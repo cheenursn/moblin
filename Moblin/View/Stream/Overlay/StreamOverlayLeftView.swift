@@ -116,10 +116,63 @@ private struct ChatStatusView: View {
     }
 }
 
+private func compactCount(_ value: Int?) -> String {
+    guard let value else {
+        return "-"
+    }
+    switch value {
+    case 1_000_000...:
+        return String(format: "%.1fM", Double(value) / 1_000_000)
+    case 10000...:
+        return "\(value / 1000)K"
+    case 1000...:
+        return String(format: "%.1fK", Double(value) / 1000)
+    default:
+        return "\(value)"
+    }
+}
+
+private struct YouTubeStatView: View {
+    let icon: String
+    let value: Int?
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .foregroundStyle(color)
+            Text(compactCount(value))
+                .monospacedDigit()
+        }
+    }
+}
+
+private struct YouTubeStatsView: View {
+    let stats: YouTubeVideoStats
+
+    var body: some View {
+        HStack(spacing: 10) {
+            if stats.isLive {
+                YouTubeStatView(icon: "eye.fill", value: stats.liveViewers, color: .red)
+            }
+            YouTubeStatView(icon: "play.fill", value: stats.views, color: .white)
+            YouTubeStatView(icon: "hand.thumbsup.fill", value: stats.likes, color: .white)
+            YouTubeStatView(icon: "text.bubble.fill", value: stats.comments, color: .white)
+        }
+        .font(.system(size: 13, weight: .semibold))
+        .foregroundStyle(.white)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(Color.black.opacity(0.6))
+        .cornerRadius(5)
+    }
+}
+
 private struct StreamStatusView: View {
     let streamName: String
     let streamText: String
     let textPlacement: StreamOverlayIconAndTextPlacement
+    var stats: YouTubeVideoStats?
 
     var body: some View {
         VStack(alignment: textPlacement == .beforeIcon ? .trailing : .leading, spacing: 1) {
@@ -130,6 +183,9 @@ private struct StreamStatusView: View {
                 .padding(.vertical, 2)
                 .background(Color.black.opacity(0.6))
                 .cornerRadius(5)
+            if let stats {
+                YouTubeStatsView(stats: stats)
+            }
             StreamOverlayIconAndTextView(
                 icon: "dot.radiowaves.left.and.right",
                 text: streamText,
@@ -205,7 +261,8 @@ private struct StatusesView: View {
         if model.isShowingStatusStream() {
             StreamStatusView(streamName: status.youTubeVideoTitle ?? model.stream.name,
                              streamText: status.streamText,
-                             textPlacement: textPlacement)
+                             textPlacement: textPlacement,
+                             stats: status.youTubeStats)
         }
         if model.isShowingStatusCamera() {
             StreamOverlayIconAndTextView(

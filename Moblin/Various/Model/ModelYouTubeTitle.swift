@@ -2,13 +2,17 @@ import Foundation
 
 extension Model {
     func updateYouTubeVideoTitle() {
+        updateYouTubeStats()
         let videoIds = stream.youTubeVideoIds.trim()
-        guard isStreamConfigured(), stream.isYouTubeAuthorized(), !videoIds.isEmpty else {
+        let authStream = stream.isYouTubeAuthorized() ? stream : youTubeAccount
+        guard isStreamConfigured(), authStream.isYouTubeAuthorized() || isYouTubeAccountSignedIn(),
+              !videoIds.isEmpty
+        else {
             setYouTubeVideoTitle(nil)
             return
         }
         let streamId = stream.id
-        getYouTubeApi(stream: stream) { youTubeApi in
+        getYouTubeApi(stream: authStream) { youTubeApi in
             youTubeApi?.listVideoTitles(videoIds: videoIds) { response in
                 guard self.stream.id == streamId, case let .success(response) = response else {
                     return

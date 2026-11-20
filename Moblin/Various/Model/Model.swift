@@ -270,6 +270,7 @@ struct ChatPlatformStatus: Equatable {
 @MainActor
 class StatusTopLeft: ObservableObject {
     @Published var youTubeVideoTitle: String?
+    @Published var youTubeStats: YouTubeVideoStats?
     @Published var numberOfViewersIconColor: Color = .white
     @Published var numberOfViewersCompact = noValue
     @Published var streamingPlatformStatuses: [StreamingPlatformStatus] = []
@@ -1979,6 +1980,7 @@ final class Model: NSObject, ObservableObject {
     }
 
     private func handle5sTimer() {
+        updateYouTubeStatsIfNeeded()
         updateRemoteControlAssistantStatus()
         if isWatchLocal() {
             sendThermalStateToWatch(thermalState: statusOther.thermalState)
